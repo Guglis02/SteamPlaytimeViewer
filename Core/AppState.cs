@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SteamPlaytimeViewer;
+namespace SteamPlaytimeViewer.Core;
 
 public class AppState
 {

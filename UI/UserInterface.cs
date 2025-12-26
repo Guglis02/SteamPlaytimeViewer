@@ -1,4 +1,5 @@
 using Spectre.Console;
+using SteamPlaytimeViewer.Core;
 
 namespace SteamPlaytimeViewer;
 

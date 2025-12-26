@@ -1,4 +1,6 @@
-namespace SteamPlaytimeViewer;
+using SteamPlaytimeViewer.Services;
+
+namespace SteamPlaytimeViewer.Core;
 
 public class InputHandler
 {
@@ -11,7 +13,7 @@ public class InputHandler
         _helpMessage = helpMessage;
     }
 
-    public bool ProcessInput(ConsoleKeyInfo key, AppState state)
+    public async Task<bool> ProcessInputAsync(ConsoleKeyInfo key, AppState state)
     {
         state.MarkDirty();
 
@@ -34,7 +36,7 @@ public class InputHandler
         }
         else if (key.Key == ConsoleKey.Enter)
         {
-            ProcessCommand(state.InputBuffer.ToString().Trim(), state);
+            await ProcessCommandAsync(state.InputBuffer.ToString().Trim(), state);
             state.InputBuffer.Clear();
             return true;
         }
@@ -47,13 +49,12 @@ public class InputHandler
         return false;
     }
 
-    private void ProcessCommand(string command, AppState state)
+    private async Task ProcessCommandAsync(string command, AppState state)
     {
         state.MarkDirty();
         
         if (command == "exit")
         {
-            // Signal to exit (handled in main loop)
             return;
         }
         else if (command == "help")
@@ -63,11 +64,11 @@ public class InputHandler
         else if (command.StartsWith("user "))
         {
             var newUser = command.Substring(5).Trim();
-            if (_dataService.HaveUser(newUser))
+            if (await _dataService.UserExistsAsync(newUser))
             {
                 state.CurrentUser = newUser;
                 state.ScrollIndex = 0;
-                state.AllGames = _dataService.GetGames(newUser);
+                state.AllGames = await _dataService.GetGamesAsync(newUser);
                 state.StatusMessage = $"[green]User changed to {newUser}![/]";
             }
             else

@@ -1,4 +1,4 @@
-namespace SteamPlaytimeViewer;
+namespace SteamPlaytimeViewer.Core;
 
 public record Game(
     string Title,
