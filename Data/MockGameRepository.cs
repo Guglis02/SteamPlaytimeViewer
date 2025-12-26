@@ -1,4 +1,5 @@
 using SteamPlaytimeViewer.Core;
+using SteamPlaytimeViewer.Data.Dtos;
 
 public class MockGameRepository : IGameRepository
 {
@@ -43,9 +44,13 @@ public class MockGameRepository : IGameRepository
         return Task.FromResult(_userGames.ContainsKey(username));
     }
 
-    public Task SaveGamesAsync(string username, List<Game> games)
+    public Task SaveUserAsync(string steamId, string username)
     {
-        _userGames[username] = games;
+        throw new NotImplementedException();
+    }
+
+    public Task SaveGamesAsync(string username, List<GameImportDto> games)
+    {
         return Task.CompletedTask;
     }
 }
