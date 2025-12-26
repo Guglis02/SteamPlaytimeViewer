@@ -30,12 +30,12 @@ public static class UserInterface
             .BorderColor(Color.Teal)
             .Expand();
         
-        table.AddColumn("Game");
+        table.AddColumn("Title");
         table.AddColumn("Playtime");
         table.AddColumn("Achievements");
         table.AddColumn("%");
-        table.AddColumn("First Session");
-        table.AddColumn("Last Session");
+        table.AddColumn("First_Session");
+        table.AddColumn("Last_Session");
 
         if (visibleGames.Any())
         {
@@ -73,9 +73,12 @@ public static class UserInterface
             .Header("Command")
             .Border(BoxBorder.Rounded)
             .BorderColor(Color.Teal)
+            .Padding(1, 0, 1, 0)
             .Expand();
 
-        var statusPanel = new Panel(new Markup(statusMessage)).Expand();
+        var statusPanel = new Panel(new Markup(statusMessage))
+            .Padding(1, 0, 1, 0)
+            .Expand();
         
         var layout = new Layout("Root")
             .SplitRows(
