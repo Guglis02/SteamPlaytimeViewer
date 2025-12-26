@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Spectre.Console;
+using SteamPlaytimeViewer.Data;
 using SteamPlaytimeViewer;
 using SteamPlaytimeViewer.Core;
 using SteamPlaytimeViewer.Services;
@@ -12,10 +13,12 @@ public class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
 
-        // IGameRepository repository = useRealDb 
-        //     ? new SqliteGameRepository(context)
-        //     : new MockGameRepository();
-        IGameRepository repository = new MockGameRepository();
+        SteamDbContext dbContext = new SteamDbContext();
+
+        IGameRepository repository = useRealDb 
+            ? new SqliteGameRepository(dbContext)
+            : new MockGameRepository();
+
         var dataService = new DataService(repository);
         
         string helpMessage = "Type 'user <name>' to change profile or 'exit'.";
@@ -51,7 +54,19 @@ public class Program
                 state.ClearDirty();
             }
 
-            await Task.Delay(50);  // Substitui Thread.Sleep
+            // Handle input
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(intercept: true);
+                await inputHandler.ProcessInputAsync(key, state);
+
+                if (inputHandler.IsExitCommand(state.InputBuffer.ToString()))
+                {
+                    break;
+                }
+            }
+
+            await Task.Delay(50);
         }
     }
 }
