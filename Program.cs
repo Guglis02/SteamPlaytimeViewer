@@ -4,15 +4,17 @@ using SteamPlaytimeViewer.Data;
 using SteamPlaytimeViewer;
 using SteamPlaytimeViewer.Core;
 using SteamPlaytimeViewer.Services;
+using Microsoft.Extensions.Configuration;
+using SteamPlaytimeViewer.External.SteamAPI;
+using SteamPlaytimeViewer.External.SteamApi;
 
 public class Program
 {
-    static readonly bool useRealDb = false;
+    static readonly bool useRealDb = true;
     
     public static async Task Main(string[] args)
     {
-        Console.OutputEncoding = Encoding.UTF8;
-
+        // Database setup
         SteamDbContext dbContext = new SteamDbContext();
 
         IGameRepository repository = useRealDb 
@@ -20,6 +22,30 @@ public class Program
             : new MockGameRepository();
 
         var dataService = new DataService(repository);
+        // ------
+
+        // API Setup
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Secret.json", optional: true, reloadOnChange: true);
+            
+            IConfiguration config = builder.Build();
+
+        var steamSettings = config.GetSection("SteamSettings").Get<SteamApiSettings>();
+
+        if (string.IsNullOrEmpty(steamSettings?.ApiKey) || steamSettings.ApiKey == "YOUR_KEY_HERE")
+        {
+            Console.WriteLine("Erro: API Key não configurada.");
+            return;
+        }
+
+        HttpClient httpClient = new();
+        SteamApiConnection steamApiConnection = new SteamApiConnection(httpClient, steamSettings.ApiKey);
+        SteamSyncService steamSyncService = new SteamSyncService(steamApiConnection, repository);
+        // ------
+
+        Console.OutputEncoding = Encoding.UTF8;
         
         string helpMessage = "Type 'user <name>' to change profile or 'exit'.";
 
@@ -36,7 +62,8 @@ public class Program
             if (state.TerminalHeight != Console.WindowHeight)
             {
                 state.TerminalHeight = Console.WindowHeight;
-                state.MarkDirty();
+                if (state.TerminalHeight > state.TerminalMinSize)
+                    state.MarkDirty();
             }
 
             // Render UI

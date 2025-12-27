@@ -17,7 +17,8 @@ public class AppState
         StatusMessage = helpMessage;
     }
 
-    public int ItemsPerPage => TerminalHeight - 15;
+    public readonly int TerminalMinSize = 15;
+    public int ItemsPerPage => Math.Max(TerminalHeight - TerminalMinSize, TerminalMinSize);
     
     public List<Game> VisibleGames => AllGames
         .Skip(ScrollIndex)
