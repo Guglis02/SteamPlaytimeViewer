@@ -41,7 +41,7 @@ public static class UserInterface
         if (visibleGames.Any())
         {
             foreach (var game in visibleGames)
-            {
+            {                
                 table.AddRow(
                     game.Title,
                     game.Playtime,
@@ -62,7 +62,7 @@ public static class UserInterface
         
         table.Caption(infoScroll);
         
-        var mainPanel = new Panel(table)
+        var mainPanel = new Panel(Align.Center(table))
             .Header(panelHeader)
             .HeaderAlignment(Justify.Left)
             .Border(BoxBorder.Rounded)

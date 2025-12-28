@@ -29,9 +29,9 @@ public class SqliteGameRepository : IGameRepository
         
         var games = rawGames.Select(ugs => new GameView(
                 ugs.Game.Title,
-                $"{ugs.PlaytimeHours}h",
+                $"{ugs.PlaytimeHours.ToString("0.00")}h",
                 $"{ugs.UnlockedAchievements}/{ugs.Game.TotalAchievements}",
-                CalculatePercentage(ugs.UnlockedAchievements, ugs.Game.TotalAchievements).ToString(),
+                CalculatePercentage(ugs.UnlockedAchievements, ugs.Game.TotalAchievements).ToString() + "%",
                 ugs.FirstPlayed?.ToString("yyyy-MM-dd") ?? "N/A",
                 ugs.LastPlayed?.ToString("yyyy-MM-dd") ?? "N/A"
             )).ToList();

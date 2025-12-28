@@ -9,6 +9,7 @@ public class AppState
     public string StatusMessage { get; set; }
     public int ScrollIndex { get; set; }
     public int TerminalHeight { get; set; }
+    public int TerminalWidth { get; set; }
     public List<Game> AllGames { get; set; } = new();
     public bool IsDirty { get; set; } = true;    
 
@@ -17,8 +18,8 @@ public class AppState
         StatusMessage = helpMessage;
     }
 
-    public readonly int TerminalMinSize = 15;
-    public int ItemsPerPage => Math.Max(TerminalHeight - TerminalMinSize, TerminalMinSize);
+    public readonly int TerminalMinSize = 17;
+    public int ItemsPerPage => Math.Max(TerminalHeight - TerminalMinSize, 0);
     
     public List<Game> VisibleGames => AllGames
         .Skip(ScrollIndex)

@@ -45,6 +45,10 @@ public class Program
         SteamSyncService steamSyncService = new SteamSyncService(steamApiConnection, repository);
         // ------
 
+        // Local VDF Setup
+        LocalVdfService localVdfService = new LocalVdfService(steamApiConnection, repository);
+        // ------
+
         Console.OutputEncoding = Encoding.UTF8;
         
         string helpMessage = "Type 'user <name>' to change profile or 'exit'.";
@@ -55,13 +59,15 @@ public class Program
         state.AllGames = await dataService.GetGamesAsync(state.CurrentUser);
 
         var inputHandler = new InputHandler(dataService, helpMessage);
-
+        
         while (true)
         {
             // Handle terminal resize
-            if (state.TerminalHeight != Console.WindowHeight)
+            if (state.TerminalHeight != Console.WindowHeight ||
+                state.TerminalWidth != Console.WindowWidth)
             {
                 state.TerminalHeight = Console.WindowHeight;
+                state.TerminalWidth = Console.WindowWidth;
                 if (state.TerminalHeight > state.TerminalMinSize)
                     state.MarkDirty();
             }

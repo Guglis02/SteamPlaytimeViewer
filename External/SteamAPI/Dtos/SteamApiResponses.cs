@@ -50,6 +50,7 @@ public record SteamAchievementDto(
 
 // --- DTO Simplificado para devolver pro seu Service ---
 public record GameStatsResult(
+    string GameName,
     int TotalAchievements,
     int UnlockedAchievements,
     DateTime? FirstUnlockedTime

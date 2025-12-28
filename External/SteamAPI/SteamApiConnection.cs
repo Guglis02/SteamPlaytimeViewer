@@ -1,5 +1,5 @@
-using System.Net;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using SteamPlaytimeViewer.External.SteamApi.Dtos;
 
 namespace SteamPlaytimeViewer.External.SteamApi;
@@ -8,9 +8,9 @@ public class SteamApiConnection
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
-    
+
     // Intervalo de segurança para evitar HTTP 429 (Too Many Requests)
-    private const int RequestDelayMs = 800; 
+    private const int RequestDelayMs = 800;
 
     public SteamApiConnection(HttpClient httpClient, string apiKey)
     {
@@ -22,11 +22,11 @@ public class SteamApiConnection
     {
         await Task.Delay(RequestDelayMs);
         var url = $"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_apiKey}&steamids={steamId}";
-        
+
         var response = await _httpClient.GetStringAsync(url);
         var data = JsonSerializer.Deserialize<SteamResponse<PlayerSummaryData>>(response);
 
-        return data?.Data.Players.FirstOrDefault() 
+        return data?.Data.Players.FirstOrDefault()
                ?? new SteamPlayerDto(steamId, "Unknown", "");
     }
 
@@ -52,20 +52,22 @@ public class SteamApiConnection
         {
             var response = await _httpClient.GetAsync(url);
 
-            // A API retorna 400 Bad Request se o jogo não tiver achievements 
+            // A api retorna erro se o jogo não tem stats ou perfil privado
             if (!response.IsSuccessStatusCode)
             {
-                return new GameStatsResult(0, 0, null);
+                return new GameStatsResult("Unknown", 0, 0, null);
             }
 
             var json = await response.Content.ReadAsStringAsync();
             var data = JsonSerializer.Deserialize<SteamStatsResponse>(json);
 
+            string gameName = data?.Data?.GameName ?? "Unknown";
+
             var achievements = data?.Data?.Achievements;
 
             if (achievements == null || !achievements.Any())
             {
-                return new GameStatsResult(0, 0, null);
+                return new GameStatsResult(gameName, 0, 0, null);
             }
 
             var total = achievements.Count;
@@ -75,7 +77,6 @@ public class SteamApiConnection
             DateTime? firstUnlock = null;
             if (unlockedList.Any())
             {
-                // Pega o menor timestamp (exceto 0)
                 var minUnix = unlockedList
                     .Select(a => a.UnlockTimeUnix)
                     .Where(t => t > 0)
@@ -88,12 +89,40 @@ public class SteamApiConnection
                 }
             }
 
-            return new GameStatsResult(total, unlockedCount, firstUnlock);
+            return new GameStatsResult(gameName, total, unlockedCount, firstUnlock);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            Console.WriteLine($"[API Error] Falha ao buscar stats do AppId {appId}: {ex.Message}");
-            return new GameStatsResult(0, 0, null);
+            Console.WriteLine($"[API Error] AppId {appId}: {ex.Message}");
+            return new GameStatsResult("Error", 0, 0, null);
         }
+    }
+
+    public async Task<string> GetGameNameAsync(int appId)
+    {
+        await Task.Delay(RequestDelayMs); 
+
+        var url = $"http://store.steampowered.com/api/appdetails?appids={appId}&filters=basic";
+
+        try
+        {
+            var response = await _httpClient.GetStringAsync(url);
+            
+            var node = JsonNode.Parse(response);
+            
+            var appNode = node?[appId.ToString()];
+            
+            if (appNode?["success"]?.GetValue<bool>() == true)
+            {
+                return appNode?["data"]?["name"]?.GetValue<string>() ?? "Unknown";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[API Error] AppId {appId}: {ex.Message}");
+            return "Unknown";
+        }
+
+        return "Unknown";
     }
 }
