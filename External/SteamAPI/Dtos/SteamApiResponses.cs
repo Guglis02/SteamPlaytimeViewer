@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SteamPlaytimeViewer.External.SteamApi.Dtos;
 
-// --- DTOs Genéricos de Resposta ---
+// --- DTOs Genéricos ---
 public record SteamResponse<T>(
     [property: JsonPropertyName("response")] T Data
 );
@@ -11,7 +11,12 @@ public record SteamStatsResponse(
     [property: JsonPropertyName("playerstats")] PlayerStatsData Data
 );
 
-// --- Dados de Jogos (GetOwnedGames) ---
+public record ResolveVanityResponse(
+    [property: JsonPropertyName("steamid")] string SteamId,
+    [property: JsonPropertyName("success")] int Success
+);
+
+// --- (GetOwnedGames) ---
 public record OwnedGamesData(
     [property: JsonPropertyName("game_count")] int GameCount,
     [property: JsonPropertyName("games")] List<SteamGameDto> Games
@@ -24,7 +29,7 @@ public record SteamGameDto(
     [property: JsonPropertyName("rtime_last_played")] long LastPlayedUnix     // Unix Timestamp
 );
 
-// --- Dados de Usuário (GetPlayerSummaries) ---
+// --- (GetPlayerSummaries) ---
 public record PlayerSummaryData(
     [property: JsonPropertyName("players")] List<SteamPlayerDto> Players
 );
@@ -35,7 +40,7 @@ public record SteamPlayerDto(
     [property: JsonPropertyName("avatarfull")] string AvatarUrl
 );
 
-// --- Dados de Achievements (GetPlayerAchievements) ---
+// --- (GetPlayerAchievements) ---
 public record PlayerStatsData(
     [property: JsonPropertyName("gameName")] string GameName,
     [property: JsonPropertyName("achievements")] List<SteamAchievementDto> Achievements,
@@ -48,7 +53,7 @@ public record SteamAchievementDto(
     [property: JsonPropertyName("unlocktime")] long UnlockTimeUnix
 );
 
-// --- DTO Simplificado para devolver pro seu Service ---
+// --- DTO Simplificado ---
 public record GameStatsResult(
     string GameName,
     int TotalAchievements,

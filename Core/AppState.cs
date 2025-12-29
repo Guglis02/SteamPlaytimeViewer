@@ -6,9 +6,9 @@ namespace SteamPlaytimeViewer.Core;
 public class AppState
 { 
     // Sync
-    public UserInfo CurrentUser { get; set; }
+    public UserInfo CurrentUser { get; set; } 
     public List<GameView> AllGames { get; set; } = new();
-    public string SteamFolder { get; internal set; }
+    public string SteamFolder { get; internal set; } = String.Empty;
     public bool ShouldSyncAccount { get; set;}
     public bool ShouldSyncLocal { get; set;}
 
@@ -19,7 +19,7 @@ public class AppState
         
     // IO
     public StringBuilder InputBuffer { get; set; } = new();
-    public string StatusMessage { get; set; }
+    public string StatusMessage { get; set; } = String.Empty;
 
     // Terminal Window
     public readonly int TerminalMinSize = 17;

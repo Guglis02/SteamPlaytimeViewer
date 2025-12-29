@@ -11,17 +11,18 @@ public class UserCommandHandler : ICommandHandler
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
     }
 
-    public string Description => "Change user/profile (usage: user <username|steamid>)";
+    public string Description => "Change user/profile (usage: user <username|steamid|url>)";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {
         if (args.Length == 0)
         {
-            state.StatusMessage = "[yellow]Usage: user <username> or user <steamid>[/]";
+            state.StatusMessage = "[yellow]Usage: user <username>, user <url> or user <steamid>[/]";
             return false;
         }
 
         var userInput = string.Join(" ", args).Trim();
+        userInput = await _dataService.ParseSteamIdAsync(userInput);
         UserInfo? userInfo = null;
 
         if (ulong.TryParse(userInput, out _) && userInput.Length >= 17)

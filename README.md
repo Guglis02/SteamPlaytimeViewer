@@ -99,16 +99,17 @@ help user
 
 ---
 
-#### `user <username|steamid>`
-Muda o usuário a ser exibido na tabela. Suporta username ou SteamID64.
+#### `user <username|steamid|url>`
+Muda o usuário a ser exibido na tabela. Suporta username, URL do perfil ou SteamID64.
 
 **Parâmetros:**
 - `<username>` - Nome do perfil (Só funciona para usuários já sincronizados).
 - `<steamid>` - SteamID64 numérico.
+- `<url>` - URL de um perfil da Steam.
 
 **Comportamento:**
 - Se usar **username**: busca no banco de dados local. Se não encontrado, mostra erro
-- Se usar **SteamID**: busca no banco. Se não existir:
+- Se usar **SteamID** ou **URL**: busca no banco. Se não existir:
   - Consulta a API Steam e busca o nome de perfil
   - Registra o novo usuário no banco
 
@@ -116,6 +117,7 @@ Muda o usuário a ser exibido na tabela. Suporta username ou SteamID64.
 ```
 user hyan
 user 76561198062983485
+user https://steamcommunity.com/id/hyan7745/
 user "nome com espaço"
 ```
 

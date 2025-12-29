@@ -42,6 +42,19 @@ public class DataService
         return await _repository.GetUserNicknameBySteamIdAsync(steamId);
     }
 
+    /// <summary>
+    /// Pode receber tanto a steamId pura quanto uma URL de um perfil.
+    /// </summary>
+    public async Task<string> ParseSteamIdAsync(string steamId)
+    {
+        if (_steamApiConnection == null)
+        {
+            throw new InvalidOperationException("Steam API não configurada. Não é possível buscar usuário desconhecido.");
+        }
+
+        return await _steamApiConnection.ParseSteamIdAsync(steamId);
+    }
+
     public async Task<UserInfo?> ResolveBySteamIdAsync(string steamId)
     {
         var existingNickname = await GetUserNicknameBySteamIdAsync(steamId);

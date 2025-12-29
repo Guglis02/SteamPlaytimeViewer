@@ -125,4 +125,54 @@ public class SteamApiConnection
 
         return "Unknown";
     }
+
+    public async Task<string> ParseSteamIdAsync(string input)
+    {
+        input = input.Trim();
+
+        // O usuário colou um ID numérico direto (ex: "76561198...")
+        if (long.TryParse(input, out _))
+            return input;
+
+        // O usuário colou uma URL do tipo /profiles/
+        if (input.Contains("/profiles/"))
+        {
+            var parts = input.Split(new[] { "/profiles/" }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 1)
+            {
+                return parts[1].Split('/')[0];
+            }
+        }
+
+        // O usuário colou uma URL Customizada (/id/)
+        string vanityName = input;
+        
+        if (input.Contains("/id/"))
+        {
+            var parts = input.Split(new[] { "/id/" }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 1)
+            {
+                vanityName = parts[1].Split('/')[0];
+            }
+        }
+
+        await Task.Delay(RequestDelayMs);
+        var url = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={_apiKey}&vanityurl={vanityName}";
+
+        try 
+        {
+            var response = await _httpClient.GetStringAsync(url);
+            var data = JsonSerializer.Deserialize<SteamResponse<ResolveVanityResponse>>(response);
+
+            if (data?.Data?.Success == 1)
+            {
+                return data.Data.SteamId;
+            }
+        }
+        catch 
+        {
+        }
+
+        return string.Empty;
+    }
 }
