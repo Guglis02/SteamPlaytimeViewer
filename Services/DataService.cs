@@ -11,9 +11,12 @@ public class DataService
         _repository = repository;
     }
 
-    public async Task<List<Game>> GetGamesAsync(string username)
+    public async Task<List<GameView>> GetGamesAsync(string username, 
+                                             string? searchFilter = null,
+                                             string sortColumn = nameof(GameView.Title),
+                                             bool sortAscending = true)
     {
-        return await _repository.GetGamesByUserAsync(username);
+        return await _repository.GetGamesByUserAsync(username, searchFilter, sortColumn, sortAscending);
     }
 
     public async Task<bool> UserExistsAsync(string username)

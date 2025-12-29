@@ -1,33 +1,58 @@
+using System.Drawing;
 using System.Text;
 
 namespace SteamPlaytimeViewer.Core;
 
 public class AppState
-{
+{ 
+    // Sync
     public string CurrentUser { get; set; } = "Guglis";
+    public List<GameView> AllGames { get; set; } = new();
+    public string SteamFolder { get; internal set; }
+    public bool ShouldSyncAccount { get; set;}
+    public bool ShouldSyncLocal { get; set;}
+
+    public bool ShouldUpdateList { get; set; }
+
+    // Search
+    public string SearchQuery { get; set; }
+        
+    // IO
     public StringBuilder InputBuffer { get; set; } = new();
     public string StatusMessage { get; set; }
-    public int ScrollIndex { get; set; }
+
+    // Terminal Window
+    public readonly int TerminalMinSize = 17;
     public int TerminalHeight { get; set; }
     public int TerminalWidth { get; set; }
-    public List<Game> AllGames { get; set; } = new();
+
+    // Dirty State
     public bool IsDirty { get; set; } = true;    
-
-    public AppState(string helpMessage)
-    {
-        StatusMessage = helpMessage;
-    }
-
-    public readonly int TerminalMinSize = 17;
-    public int ItemsPerPage => Math.Max(TerminalHeight - TerminalMinSize, 0);
     
-    public List<Game> VisibleGames => AllGames
+    // Appearance
+    public string MainColor = Color.Teal.ToString();
+
+    // Pagination
+    public int ScrollIndex { get; set; }
+    public int ItemsPerPage => Math.Max(TerminalHeight - TerminalMinSize, 0);
+    public List<GameView> VisibleGames => AllGames
         .Skip(ScrollIndex)
         .Take(ItemsPerPage)
         .ToList();
     
+    // Exit
+    public bool ShouldExit { get; set; } = false;
+
+    // Sorting
+    public string SortColumn { get; set; } = nameof(GameView.Title);
+    public bool SortAscending { get; set; } = true;
+    
+    public AppState(string initialMessage)
+    {
+        StatusMessage = initialMessage;
+    }
+
     public void MarkDirty() => IsDirty = true;
     public void ClearDirty() => IsDirty = false;
-    public bool ShouldExit { get; set; } = false;
-    public string SteamFolder { get; internal set; }
+    
 }

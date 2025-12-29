@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
+// using Microsoft.Win32;
 
 namespace SteamPlaytimeViewer.Services;
 
@@ -21,28 +21,28 @@ public static class SteamPathFinder
 
     private static string? GetWindowsSteamPath()
     {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-            if (key?.GetValue("SteamPath") is string registryPath)
-            {
-                string path = registryPath.Replace('/', Path.DirectorySeparatorChar);
+        // try
+        // {
+        //     using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+        //     if (key?.GetValue("SteamPath") is string registryPath)
+        //     {
+        //         string path = registryPath.Replace('/', Path.DirectorySeparatorChar);
                 
-                if (Directory.Exists(path)) return path;
-            }
-        }
-        catch
-        {
-            // Ignora erros de permissão/registro e tenta o padrão
-        }
+        //         if (Directory.Exists(path)) return path;
+        //     }
+        // }
+        // catch
+        // {
+        //     // Ignora erros de permissão/registro e tenta o padrão
+        // }
 
-        // Fallback para o caminho padrão 64-bit
-        string defaultPath64 = @"C:\Program Files (x86)\Steam";
-        if (Directory.Exists(defaultPath64)) return defaultPath64;
+        // // Fallback para o caminho padrão 64-bit
+        // string defaultPath64 = @"C:\Program Files (x86)\Steam";
+        // if (Directory.Exists(defaultPath64)) return defaultPath64;
 
-        // Fallback para o caminho padrão 32-bit
-        string defaultPath32 = @"C:\Program Files\Steam";
-        if (Directory.Exists(defaultPath32)) return defaultPath32;
+        // // Fallback para o caminho padrão 32-bit
+        // string defaultPath32 = @"C:\Program Files\Steam";
+        // if (Directory.Exists(defaultPath32)) return defaultPath32;
 
         return null;
     }

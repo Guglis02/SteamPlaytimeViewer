@@ -3,7 +3,7 @@ using SteamPlaytimeViewer.Data;
 using SteamPlaytimeViewer.Data.Dtos;
 using Microsoft.EntityFrameworkCore;
 using SteamPlaytimeViewer.Models;
-using GameView = SteamPlaytimeViewer.Core.Game;
+using GameView = SteamPlaytimeViewer.Core.GameView;
 
 public class SqliteGameRepository : IGameRepository
 {
@@ -14,7 +14,10 @@ public class SqliteGameRepository : IGameRepository
         _dbContext = dbContext;
     }
 
-    public async Task<List<GameView>> GetGamesByUserAsync(string username)
+    public async Task<List<GameView>> GetGamesByUserAsync(string username,
+                                                string? searchFilter = null,
+                                                string sortColumn = nameof(GameView.Title),
+                                                bool sortAscending = true)
     {        
         var user = await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Nickname == username);
@@ -26,15 +29,25 @@ public class SqliteGameRepository : IGameRepository
             .Where(ugs => ugs.UserSteamId == user.SteamId)
             .Include(ugs => ugs.Game)
             .ToListAsync();
-        
+
+        if (!string.IsNullOrWhiteSpace(searchFilter))
+        {
+            var query = searchFilter.ToLower();
+            rawGames = rawGames
+                .Where(ugs => ugs.Game.Title.ToLower().Contains(query))
+                .ToList();
+        }
+            
+        rawGames = ApplySorting(rawGames, sortColumn, sortAscending);
+
         var games = rawGames.Select(ugs => new GameView(
-                ugs.Game.Title,
-                $"{ugs.PlaytimeHours.ToString("0.00")}h",
-                $"{ugs.UnlockedAchievements}/{ugs.Game.TotalAchievements}",
-                CalculatePercentage(ugs.UnlockedAchievements, ugs.Game.TotalAchievements).ToString() + "%",
-                ugs.FirstPlayed?.ToString("yyyy-MM-dd") ?? "N/A",
-                ugs.LastPlayed?.ToString("yyyy-MM-dd") ?? "N/A"
-            )).ToList();
+            ugs.Game.Title,
+            $"{ugs.PlaytimeHours.ToString("0.00")}h",
+            $"{ugs.UnlockedAchievements}/{ugs.Game.TotalAchievements}",
+            CalculatePercentage(ugs.UnlockedAchievements, ugs.Game.TotalAchievements).ToString() + "%",
+            ugs.FirstPlayed?.ToString("yyyy-MM-dd") ?? "N/A",
+            ugs.LastPlayed?.ToString("yyyy-MM-dd") ?? "N/A"
+        )).ToList();
 
         return games ?? new List<GameView>();
     }
@@ -134,5 +147,24 @@ public class SqliteGameRepository : IGameRepository
     {
         if (total == 0) return 0.0;
         return Math.Round((double)unlocked / total * 100, 1);
+    }
+
+    /// <summary>
+    /// Aplica ordenação aos dados brutos antes da conversão para <see cref="GameView"/>.
+    /// </summary>
+    private List<UserGameStats> ApplySorting(List<UserGameStats> games, string sortColumn, bool sortAscending)
+    {
+        var sorted = sortColumn switch
+        {
+            "title" => games.OrderBy(g => g.Game.Title),
+            "playtime" => games.OrderBy(g => g.PlaytimeHours),
+            "achievements" => games.OrderBy(g => g.UnlockedAchievements),
+            "percentage" => games.OrderBy(g => CalculatePercentage(g.UnlockedAchievements, g.Game.TotalAchievements)),
+            "firstsession" => games.OrderBy(g => g.FirstPlayed),
+            "lastsession" => games.OrderBy(g => g.LastPlayed),
+            _ => games.OrderBy(g => g.Game.Title) // Padrão
+        };
+
+        return sortAscending ? sorted.ToList() : sorted.Reverse().ToList();
     }
 }

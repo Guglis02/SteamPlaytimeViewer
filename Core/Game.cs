@@ -1,6 +1,6 @@
 namespace SteamPlaytimeViewer.Core;
 
-public record Game(
+public record GameView (
     string Title,
     string Playtime,
     string Achievements,

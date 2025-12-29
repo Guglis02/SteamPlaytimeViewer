@@ -22,7 +22,7 @@ public static class UserInterface
         return row;
     }
     
-    public static Layout BuildLayout(string user, List<Game> visibleGames, int totalGames, int scrollIndex, string input, string statusMessage)
+    public static Layout BuildLayout(string user, List<GameView> visibleGames, int totalGames, int scrollIndex, string input, string statusMessage)
     {
         var panelHeader = $" Profile: {user} ";
         

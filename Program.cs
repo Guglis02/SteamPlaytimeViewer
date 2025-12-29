@@ -55,6 +55,8 @@ public class Program
         commandRegistry.Register("exit", new ExitCommandHandler());
         commandRegistry.Register("help", new HelpCommandHandler(commandRegistry));
         commandRegistry.Register("user", new UserCommandHandler(dataService));
+        commandRegistry.Register("sort", new SortCommandHandler());
+        commandRegistry.Register("search", new SearchCommandHandler());
 
         var inputHandler = new InputHandler(commandRegistry);
         // ------
@@ -80,6 +82,14 @@ public class Program
                 state.TerminalWidth = Console.WindowWidth;
                 if (state.TerminalHeight > state.TerminalMinSize)
                     state.MarkDirty();
+            }
+
+            if (state.ShouldUpdateList)
+            {
+                state.AllGames = await dataService.GetGamesAsync(state.CurrentUser,
+                                                                 state.SearchQuery,
+                                                                 state.SortColumn,
+                                                                 state.SortAscending);
             }
 
             // Render UI
