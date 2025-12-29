@@ -11,28 +11,64 @@ public class UserCommandHandler : ICommandHandler
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
     }
 
-    public string Description => "Muda o usuário/perfil (uso: user <nome>)";
+    public string Description => "Muda o usuário (uso: user <username|steamid>)";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {
         if (args.Length == 0)
         {
-            state.StatusMessage = "[yellow]Use: user <nome>[/]";
+            state.StatusMessage = "[yellow]Use: user <username> ou user <steamid>[/]";
             return false;
         }
 
-        var newUser = string.Join(" ", args).Trim();
+        var userInput = string.Join(" ", args).Trim();
+        UserInfo? userInfo = null;
 
-        if (await _dataService.UserExistsAsync(newUser))
+        // Tentar resolver como SteamID
+        if (ulong.TryParse(userInput, out _) && userInput.Length >= 17)
         {
-            state.CurrentUser = newUser;
-            state.ScrollIndex = 0;
-            state.AllGames = await _dataService.GetGamesAsync(newUser);
-            state.StatusMessage = $"[green]Usuário alterado para {newUser}![/]";
-            return true;
+            try
+            {
+                userInfo = await _dataService.ResolveBySteamIdAsync(userInput);
+                
+                if (userInfo == null)
+                {
+                    state.StatusMessage = $"[red]SteamID '{userInput}' não encontrado na Steam API.[/]";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                state.StatusMessage = $"[red]Erro: {ex.Message}[/]";
+                return false;
+            }
+        }
+        else
+        {
+            // Tentar resolver como username
+            string? steamId = await _dataService.GetSteamIdByUsernameAsync(userInput);
+
+            if (steamId == null)
+            {
+                state.StatusMessage = 
+                    $"[yellow]Usuário '{userInput}' não encontrado. Use o SteamID para registrar um novo usuário.[/]";
+                return false;
+            }
+
+            userInfo = new UserInfo(steamId, userInput);
         }
 
-        state.StatusMessage = $"[red]Usuário '{newUser}' não encontrado![/]";
-        return false;
+        // Atualizar estado
+        state.CurrentUser = userInfo!;
+        state.ScrollIndex = 0;
+        state.SearchQuery = null; // Limpar busca anterior
+        state.SortColumn = nameof(GameView.Title); // Reset ordenação
+        state.SortAscending = true;
+        state.ShouldUpdateList = true;
+
+        state.StatusMessage = $"[green]Usuário alterado para {userInfo.Username}![/]";
+        state.MarkDirty();
+
+        return true;
     }
 }

@@ -21,8 +21,6 @@ public class Program
         IGameRepository repository = useRealDb 
             ? new SqliteGameRepository(dbContext)
             : new MockGameRepository();
-
-        var dataService = new DataService(repository);
         // ------
 
         // API Setup
@@ -50,6 +48,10 @@ public class Program
         LocalVdfService localVdfService = new LocalVdfService(steamApiConnection, repository);
         // ------
 
+        // Data service Setup
+        var dataService = new DataService(steamApiConnection, repository);
+        // ------
+
         // Command Setup
         var commandRegistry = new CommandRegistry();
         commandRegistry.Register("exit", new ExitCommandHandler());
@@ -57,17 +59,22 @@ public class Program
         commandRegistry.Register("user", new UserCommandHandler(dataService));
         commandRegistry.Register("sort", new SortCommandHandler());
         commandRegistry.Register("search", new SearchCommandHandler());
+        commandRegistry.Register("sync", new SyncCommandHandler(steamSyncService, localVdfService));
 
         var inputHandler = new InputHandler(commandRegistry);
         // ------
 
         // AppState Setup
-        string helpMessage = "Type 'help' for a list of commands and 'help <command>' for details.";
-        var state = new AppState(helpMessage);
-
-        state.TerminalHeight = Console.WindowHeight;
-        state.AllGames = await dataService.GetGamesAsync(state.CurrentUser);
-        state.SteamFolder = SteamPathFinder.TryAutoDetectSteamPath() ?? "";
+        string initialMessage = "Type 'help' for a list of commands and 'help <command>' for details.";
+        var state = new AppState()
+        {
+            StatusMessage = initialMessage,
+            CurrentUser = new UserInfo (username: "hyan", steamId: "76561198062983485"),
+            TerminalHeight = Console.WindowHeight,
+            TerminalWidth = Console.WindowWidth,
+            SteamFolder = SteamPathFinder.TryAutoDetectSteamPath() ?? ""
+        };
+        state.AllGames = await dataService.GetGamesAsync(state.CurrentUser.Username);
         // ------
 
         Console.OutputEncoding = Encoding.UTF8;
@@ -86,10 +93,11 @@ public class Program
 
             if (state.ShouldUpdateList)
             {
-                state.AllGames = await dataService.GetGamesAsync(state.CurrentUser,
+                state.AllGames = await dataService.GetGamesAsync(state.CurrentUser.Username,
                                                                  state.SearchQuery,
                                                                  state.SortColumn,
                                                                  state.SortAscending);
+                state.ShouldUpdateList = false;
             }
 
             // Render UI

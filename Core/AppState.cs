@@ -6,7 +6,7 @@ namespace SteamPlaytimeViewer.Core;
 public class AppState
 { 
     // Sync
-    public string CurrentUser { get; set; } = "Guglis";
+    public UserInfo CurrentUser { get; set; }
     public List<GameView> AllGames { get; set; } = new();
     public string SteamFolder { get; internal set; }
     public bool ShouldSyncAccount { get; set;}
@@ -15,7 +15,7 @@ public class AppState
     public bool ShouldUpdateList { get; set; }
 
     // Search
-    public string SearchQuery { get; set; }
+    public string? SearchQuery { get; set; }
         
     // IO
     public StringBuilder InputBuffer { get; set; } = new();
@@ -46,13 +46,23 @@ public class AppState
     // Sorting
     public string SortColumn { get; set; } = nameof(GameView.Title);
     public bool SortAscending { get; set; } = true;
-    
-    public AppState(string initialMessage)
-    {
-        StatusMessage = initialMessage;
-    }
 
     public void MarkDirty() => IsDirty = true;
     public void ClearDirty() => IsDirty = false;
     
+}
+
+/// <summary>
+/// Encapsula informações básicas de um usuário.
+/// </summary>
+public class UserInfo
+{
+    public string SteamId { get; set; }
+    public string? Username { get; set; }
+
+    public UserInfo(string steamId, string? username = null)
+    {
+        SteamId = steamId;
+        Username = username;
+    }
 }

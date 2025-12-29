@@ -48,6 +48,21 @@ public class MockGameRepository : IGameRepository
         return Task.FromResult(_userGames.ContainsKey(username));
     }
 
+    public async Task<bool> UserExistsBySteamIdAsync(string steamId)
+    {
+        return await Task.FromResult(false);
+    }
+
+    public async Task<string?> GetUserNicknameBySteamIdAsync(string steamId)
+    {
+        return await Task.FromResult<string?>(null);
+    }
+
+    public async Task<string?> GetSteamIdByUsernameAsync(string username)
+    {
+        return await Task.FromResult<string?>(null);
+    }
+
     public Task SaveUserAsync(string steamId, string username)
     {
         throw new NotImplementedException();

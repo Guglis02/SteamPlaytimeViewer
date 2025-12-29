@@ -1,7 +1,8 @@
 using Gameloop.Vdf;
-using Gameloop.Vdf.Linq;
+using SteamPlaytimeViewer.Core;
 using SteamPlaytimeViewer.Data.Dtos;
 using SteamPlaytimeViewer.External.SteamApi;
+using SteamPlaytimeViewer.Models;
 
 namespace SteamPlaytimeViewer.Services;
 
@@ -16,16 +17,38 @@ public class LocalVdfService
         _repository = repository;
     }
 
-    public async Task SyncLocalLibraryAsync(string steamId, string steamPath)
-    {                
+    public bool UserFolderExists(UserInfo userInfo, string steamPath)
+    {        
         if (steamPath == null)
         {
             Console.WriteLine($"Pasta '{steamPath}' não encontrada!");
-            return;
+            return false;
+        }
+
+        string id3 = SteamId64ToSteamId3(userInfo.SteamId);
+        string filePath = Path.Combine(steamPath, "userdata", id3, "config", "localconfig.vdf");
+
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine($"[Erro] VDF não encontrado em: {filePath}");
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public async Task<bool> SyncLocalLibraryAsync(UserInfo userInfo, string steamPath)
+    {                
+        if (!UserFolderExists(userInfo, steamPath))
+        {
+            return false;
         }
      
-        Console.WriteLine("Lendo arquivo VDF local...");
-        List<GameImportDto> localGamesCandidates = GetLocalLibraryCandidates(steamId, steamPath);
+        string steamId = userInfo.SteamId;
+        string id3 = SteamId64ToSteamId3(steamId);
+        string filePath = Path.Combine(steamPath, "userdata", id3, "config", "localconfig.vdf");
+        List<GameImportDto> localGamesCandidates = GetLocalLibraryCandidates(steamId, filePath);
         
         Console.WriteLine($"Encontrados {localGamesCandidates.Count} jogos no VDF local.");
         Console.WriteLine("Buscando nomes e achievements na API (Isso pode demorar)...");
@@ -74,25 +97,18 @@ public class LocalVdfService
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro ao processar {candidate.AppId}: {ex.Message}");
+                return false;
             }
         }
 
         Console.WriteLine("\nSalvando dados do VDF no banco...");
         await _repository.SaveGamesAsync(steamId, gamesToSave);
         Console.WriteLine("Sincronização Local Concluída!");
+        return true;
     }
 
-    private List<GameImportDto> GetLocalLibraryCandidates(string steamId64, string steamPath)
+    private List<GameImportDto> GetLocalLibraryCandidates(string steamId64, string filePath)
     {        
-        string id3 = SteamId64ToSteamId3(steamId64);
-        string filePath = Path.Combine(steamPath, "userdata", id3, "config", "localconfig.vdf");
-
-        if (!File.Exists(filePath))
-        {
-            Console.WriteLine($"[Erro] VDF não encontrado em: {filePath}");
-            return new List<GameImportDto>();
-        }
-
         var parseSettings = new VdfSerializerSettings {
             MaximumTokenSize = 20000,
             UsesEscapeSequences = true,

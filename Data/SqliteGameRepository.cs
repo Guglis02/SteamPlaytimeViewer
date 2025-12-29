@@ -52,6 +52,24 @@ public class SqliteGameRepository : IGameRepository
         return games ?? new List<GameView>();
     }
 
+    public async Task<bool> UserExistsBySteamIdAsync(string steamId)
+    {
+        return await _dbContext.Users
+            .AnyAsync(u => u.SteamId == steamId);
+    }
+
+    public async Task<string?> GetUserNicknameBySteamIdAsync(string steamId)
+    {
+        var user = await _dbContext.Users.FindAsync(steamId);
+        return user?.Nickname;
+    }
+
+    public async Task<string?> GetSteamIdByUsernameAsync(string username)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(user => user.Nickname == username);
+        return user?.SteamId;
+    }
+
     public async Task SaveUserAsync(string steamId, string nickname)
     {
         var user = await _dbContext.Users.FindAsync(steamId);

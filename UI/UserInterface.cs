@@ -22,9 +22,9 @@ public static class UserInterface
         return row;
     }
     
-    public static Layout BuildLayout(string user, List<GameView> visibleGames, int totalGames, int scrollIndex, string input, string statusMessage)
+    public static Layout BuildLayout(UserInfo user, List<GameView> visibleGames, int totalGames, int scrollIndex, string input, string statusMessage)
     {
-        var panelHeader = $" Profile: {user} ";
+        var panelHeader = $"  Profile: {user.Username} - SteamId64: {user.SteamId}  ";
         
         var table = new Table()
             .Border(TableBorder.Horizontal)
