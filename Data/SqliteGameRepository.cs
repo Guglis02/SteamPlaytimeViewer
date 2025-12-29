@@ -100,7 +100,6 @@ public class SqliteGameRepository : IGameRepository
 
         if (user == null)
         {
-            Console.WriteLine($"[Error] User with ID {steamId} not found via SaveGamesAsync.");
             return; 
         }
 

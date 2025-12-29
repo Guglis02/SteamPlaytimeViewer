@@ -2,7 +2,7 @@ namespace SteamPlaytimeViewer.Core.Commands;
 
 public class FolderCommandHandler : ICommandHandler
 {
-    public string Description => "Define a pasta do Steam (uso: folder <caminho>), execução sem comando mostra o caminho atual";
+    public string Description => "Set Steam folder path (usage: folder <path>)";
 
     public Task<bool> HandleAsync(string[] args, AppState state)
     {
@@ -10,11 +10,11 @@ public class FolderCommandHandler : ICommandHandler
         {
             if (string.IsNullOrWhiteSpace(state.SteamFolder))
             {
-                state.StatusMessage = "[yellow]Pasta do Steam não configurada. Use: folder <caminho>[/]";
+                state.StatusMessage = "[yellow]Steam folder not configured. Use: folder <path>[/]";
             }
             else
             {
-                state.StatusMessage = $"[cyan]Pasta Steam atual:[/] {state.SteamFolder}";
+                state.StatusMessage = $"[cyan]Current Steam folder:[/] {state.SteamFolder}";
             }
             return Task.FromResult(true);
         }
@@ -29,13 +29,12 @@ public class FolderCommandHandler : ICommandHandler
         // Validar se o diretório existe
         if (!Directory.Exists(normalizedPath))
         {
-            state.StatusMessage = 
-                $"[red]Pasta não encontrada:[/] {normalizedPath}";
+            state.StatusMessage = $"[red]Folder not found:[/] {normalizedPath}";
             return Task.FromResult(false);
         }
 
         state.SteamFolder = normalizedPath;
-        state.StatusMessage = $"[green]Pasta do Steam configurada:[/] {normalizedPath}";
+        state.StatusMessage = $"[green]Steam folder set:[/] {normalizedPath}";
 
         return Task.FromResult(true);
     }

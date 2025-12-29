@@ -15,14 +15,13 @@ public class SyncCommandHandler : ICommandHandler
         _localVdfService = localVdfService ?? throw new ArgumentNullException(nameof(localVdfService));
     }
 
-    public string Description => "Sincroniza dados de jogos (uso: sync account|local)";
+    public string Description => "Synchronize game data (usage: sync account|local)";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {
-        if (args.Length == 0)
+        if (args.Length == 0 || args.Length > 1)
         {
-            state.StatusMessage = 
-                "[yellow]Use: sync account - Sincroniza da API Steam; sync local - Sincroniza de arquivo VDF local[/]";
+            state.StatusMessage = "[yellow]Use: sync account (API) or sync local (VDF file)[/]";
             return false;
         }
 
@@ -38,7 +37,7 @@ public class SyncCommandHandler : ICommandHandler
         }
         else
         {
-            state.StatusMessage = $"[red]Tipo de sincronização '{syncType}' inválido. Use 'account' ou 'local'.[/]";
+            state.StatusMessage = $"[red]Invalid sync type '{syncType}'. Use 'account' or 'local'.[/]";
             return false;
         }
     }
@@ -49,15 +48,13 @@ public class SyncCommandHandler : ICommandHandler
 
         if (string.IsNullOrWhiteSpace(steamId))
         {
-            state.StatusMessage = 
-                $"[red]Não é possível sincronizar '{state.CurrentUser.SteamId}' pela API.[/]\n" +
-                $"[yellow]Razão: SteamID não encontrado no banco de dados.[/]";
+            state.StatusMessage = $"[red]Cannot sync '{state.CurrentUser.Username}': SteamID not found in database.[/]";
             return false;
         }
 
         try
         {
-            state.StatusMessage = "[cyan]Sincronizando dados da conta Steam...[/]";
+            state.StatusMessage = "[cyan]Syncing account data from Steam API...[/]";
             state.MarkDirty();
 
             await _steamSyncService.SyncUserDataAsync(steamId);
@@ -69,7 +66,7 @@ public class SyncCommandHandler : ICommandHandler
         }
         catch (Exception ex)
         {
-            state.StatusMessage = $"[red]Erro ao sincronizar: {ex.Message}[/]";
+            state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
             return false;
         }
     }
@@ -78,9 +75,7 @@ public class SyncCommandHandler : ICommandHandler
     {
         if (string.IsNullOrWhiteSpace(state.SteamFolder))
         {
-            state.StatusMessage = 
-                "[red]Pasta do Steam não foi configurada.[/]\n" +
-                "[yellow]A detecção automática falhou. Configure manualmente se possível.[/]";
+            state.StatusMessage = "[red]Steam folder not configured. Use 'folder <path>' to set it.[/]";
             return false;
         }
 
@@ -88,15 +83,13 @@ public class SyncCommandHandler : ICommandHandler
 
         if (string.IsNullOrWhiteSpace(steamId))
         {
-            state.StatusMessage = 
-                $"[red]Não é possível sincronizar '{state.CurrentUser.SteamId}' localmente.[/]\n" +
-                $"[yellow]Razão: SteamID não encontrado no banco de dados.[/]";
+            state.StatusMessage = $"[red]Cannot sync '{state.CurrentUser.Username}': SteamID not found in database.[/]";
             return false;
         }
 
         try
         {
-            state.StatusMessage = "[cyan]Sincronizando dados do VDF local...[/]";
+            state.StatusMessage = "[cyan]Syncing local VDF data...[/]";
             state.MarkDirty();
 
             if (!await _localVdfService.SyncLocalLibraryAsync(state.CurrentUser, state.SteamFolder))
@@ -104,14 +97,14 @@ public class SyncCommandHandler : ICommandHandler
                 return false;
             }
 
-            state.StatusMessage = $"[green]Sincronização local concluída![/]";
+            state.StatusMessage = "[green]Local sync completed successfully![/]";
             state.ShouldUpdateList = true;
 
             return true;
         }
         catch (Exception ex)
         {
-            state.StatusMessage = $"[red]Erro ao sincronizar: {ex.Message}[/]";
+            state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
             return false;
         }
     }

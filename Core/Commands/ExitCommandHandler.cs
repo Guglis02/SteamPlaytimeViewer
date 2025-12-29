@@ -2,7 +2,7 @@ namespace SteamPlaytimeViewer.Core.Commands;
 
 public class ExitCommandHandler : ICommandHandler
 {
-    public string Description => "Sai da aplicação";
+    public string Description => "Exit the application";
 
     public Task<bool> HandleAsync(string[] args, AppState state)
     {

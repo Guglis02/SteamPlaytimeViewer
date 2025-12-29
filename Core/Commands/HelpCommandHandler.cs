@@ -11,7 +11,7 @@ public class HelpCommandHandler : ICommandHandler
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
     }
 
-    public string Description => "Mostra a lista de comandos disponiveis ou detalhes sobre um comando especifico";
+    public string Description => "Shows a list of available commands or details about an specific command (Usage: help or help <command>)";
 
     public Task<bool> HandleAsync(string[] args, AppState state)
     {
@@ -20,7 +20,7 @@ public class HelpCommandHandler : ICommandHandler
         if (args.Length == 0)
         {
             var sb = new StringBuilder();
-            sb.Append("[bold]Comandos disponíveis ('help <command>' para mais detalhes):[/]");
+            sb.Append("[bold cyan]Available Commands:[/]");
             
             foreach (var cmd in commands.OrderBy(x => x.Key))
             {
@@ -33,13 +33,14 @@ public class HelpCommandHandler : ICommandHandler
 
         if (args.Length > 1)
         {
-            state.StatusMessage = "[red]O comando help aceita apenas um comando como parâmetro![/]";
+            state.StatusMessage = "[yellow]Use: help for a list of commands or help <command> for more details[/]";
             return Task.FromResult(false);
+
         }
 
         if (!commands.ContainsKey(args[0]))
         {
-            state.StatusMessage = $"[yellow]O comando {args[0]} não foi encontrado! Use o comando 'help' para ver a lista de comandos disponíveis.[/]";
+            state.StatusMessage = $"[yellow]Command {args[0]} not found! Use 'help' for a list of available commands.[/]";
             return Task.FromResult(false);
         }
 

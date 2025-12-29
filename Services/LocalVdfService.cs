@@ -10,18 +10,20 @@ public class LocalVdfService
 {
     private readonly IGameRepository _repository;
     private readonly SteamApiConnection _steamApi;
+    private readonly AppState state;
 
-    public LocalVdfService(SteamApiConnection steamApi, IGameRepository repository)
+    public LocalVdfService(SteamApiConnection steamApi, IGameRepository repository, AppState appState)
     {
         _steamApi = steamApi;
         _repository = repository;
+        state = appState;
     }
 
     public bool UserFolderExists(UserInfo userInfo, string steamPath)
     {        
         if (steamPath == null)
         {
-            Console.WriteLine($"Pasta '{steamPath}' não encontrada!");
+            state.StatusMessage = $"[red]Steam folder not found: {steamPath}[/]";
             return false;
         }
 
@@ -30,7 +32,7 @@ public class LocalVdfService
 
         if (!File.Exists(filePath))
         {
-            Console.WriteLine($"[Erro] VDF não encontrado em: {filePath}");
+            state.StatusMessage = $"[red]VDF not found in: {filePath}[/]";
             return false;
         }
 
@@ -49,9 +51,8 @@ public class LocalVdfService
         string id3 = SteamId64ToSteamId3(steamId);
         string filePath = Path.Combine(steamPath, "userdata", id3, "config", "localconfig.vdf");
         List<GameImportDto> localGamesCandidates = GetLocalLibraryCandidates(steamId, filePath);
-        
-        Console.WriteLine($"Encontrados {localGamesCandidates.Count} jogos no VDF local.");
-        Console.WriteLine("Buscando nomes e achievements na API (Isso pode demorar)...");
+                
+        state.StatusMessage = $"[cyan]Found {localGamesCandidates.Count} games in VDF. Enriching data from API... (This can take a while)[/]";
 
         var gamesToSave = new List<GameImportDto>();
         int count = 0;
@@ -59,7 +60,7 @@ public class LocalVdfService
         foreach (var candidate in localGamesCandidates)
         {
             count++;
-            Console.Write($"\rEnriquecendo VDF {count}/{localGamesCandidates.Count}: ID {candidate.AppId}...");
+            state.StatusMessage = $"[cyan]Enriching {count}/{localGamesCandidates.Count}: AppID {candidate.AppId}...[/]";
 
             try
             {
@@ -73,7 +74,7 @@ public class LocalVdfService
                 }
                 else
                 {
-                    Console.Write(" (Buscando nome na loja)...");
+                    state.StatusMessage = $"[yellow]Searching store for name...[/]";
                     finalName = await _steamApi.GetGameNameAsync(candidate.AppId);
                     
                     if (finalName == "Unknown")
@@ -96,14 +97,14 @@ public class LocalVdfService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao processar {candidate.AppId}: {ex.Message}");
+                state.StatusMessage = $"[yellow]Error processing {candidate.AppId}: {ex.Message}[/]";
                 return false;
             }
         }
 
-        Console.WriteLine("\nSalvando dados do VDF no banco...");
+        state.StatusMessage = "[cyan]Saving VDF data to database...[/]";
         await _repository.SaveGamesAsync(steamId, gamesToSave);
-        Console.WriteLine("Sincronização Local Concluída!");
+        state.StatusMessage = "[green]Local sync completed![/]";
         return true;
     }
 
@@ -117,7 +118,7 @@ public class LocalVdfService
                     
         try 
         {
-            Console.WriteLine($"Lendo VDF: {filePath}");
+            state.StatusMessage = $"[cyan]Reading VDF: {filePath}[/]";
 
             dynamic vdf = VdfConvert.Deserialize(File.ReadAllText(filePath), parseSettings);
             var apps = vdf.Value.Software.Valve.Steam.apps;
@@ -153,7 +154,7 @@ public class LocalVdfService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao ler VDF: {ex.Message}");
+            state.StatusMessage = $"[red]Error reading VDF: {ex.Message}[/]";
             return new List<GameImportDto>();
         }
     }

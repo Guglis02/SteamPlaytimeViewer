@@ -35,34 +35,17 @@ public class Program
 
         if (string.IsNullOrEmpty(steamSettings?.ApiKey) || steamSettings.ApiKey == "YOUR_KEY_HERE")
         {
-            Console.WriteLine("Erro: API Key não configurada.");
+            AnsiConsole.MarkupLine("[red]Error: Steam API Key not configured.[/]");
+            AnsiConsole.MarkupLine("[yellow]Please configure appsettings.Secret.json[/]");
             return;
         }
 
         HttpClient httpClient = new();
         SteamApiConnection steamApiConnection = new SteamApiConnection(httpClient, steamSettings.ApiKey);
-        SteamSyncService steamSyncService = new SteamSyncService(steamApiConnection, repository);
-        // ------
-
-        // Local VDF Setup
-        LocalVdfService localVdfService = new LocalVdfService(steamApiConnection, repository);
         // ------
 
         // Data service Setup
         var dataService = new DataService(steamApiConnection, repository);
-        // ------
-
-        // Command Setup
-        var commandRegistry = new CommandRegistry();
-        commandRegistry.Register("exit", new ExitCommandHandler());
-        commandRegistry.Register("help", new HelpCommandHandler(commandRegistry));
-        commandRegistry.Register("user", new UserCommandHandler(dataService));
-        commandRegistry.Register("sort", new SortCommandHandler());
-        commandRegistry.Register("search", new SearchCommandHandler());
-        commandRegistry.Register("sync", new SyncCommandHandler(steamSyncService, localVdfService));
-        commandRegistry.Register("folder", new FolderCommandHandler());
-
-        var inputHandler = new InputHandler(commandRegistry);
         // ------
 
         // AppState Setup
@@ -76,6 +59,27 @@ public class Program
             SteamFolder = SteamPathFinder.TryAutoDetectSteamPath() ?? ""
         };
         state.AllGames = await dataService.GetGamesAsync(state.CurrentUser.Username);
+        // ------
+
+        // Steam Sync Setup
+        SteamSyncService steamSyncService = new SteamSyncService(steamApiConnection, repository, state);
+        // ------
+
+        // Local VDF Setup
+        LocalVdfService localVdfService = new LocalVdfService(steamApiConnection, repository, state);
+        // ------
+
+        // Command Setup
+        var commandRegistry = new CommandRegistry();
+        commandRegistry.Register("exit", new ExitCommandHandler());
+        commandRegistry.Register("help", new HelpCommandHandler(commandRegistry));
+        commandRegistry.Register("user", new UserCommandHandler(dataService));
+        commandRegistry.Register("sort", new SortCommandHandler());
+        commandRegistry.Register("search", new SearchCommandHandler());
+        commandRegistry.Register("sync", new SyncCommandHandler(steamSyncService, localVdfService));
+        commandRegistry.Register("folder", new FolderCommandHandler());
+
+        var inputHandler = new InputHandler(commandRegistry);
         // ------
 
         Console.OutputEncoding = Encoding.UTF8;

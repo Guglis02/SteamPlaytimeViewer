@@ -1,3 +1,4 @@
+using SteamPlaytimeViewer.Core;
 using SteamPlaytimeViewer.Data.Dtos;
 using SteamPlaytimeViewer.External.SteamApi;
 
@@ -5,16 +6,18 @@ public class SteamSyncService
 {
     private readonly SteamApiConnection _steamApi;
     private readonly IGameRepository _repository;
+    private readonly AppState _appState;
 
-    public SteamSyncService(SteamApiConnection steamApi, IGameRepository repository)
+    public SteamSyncService(SteamApiConnection steamApi, IGameRepository repository, AppState appState)
     {
         _steamApi = steamApi;
         _repository = repository;
+        _appState = appState;
     }
 
     public async Task SyncUserDataAsync(string steamId)
     {
-        Console.WriteLine($"Iniciando sincronização para: {steamId}...");
+        _appState.StatusMessage = $"[cyan]Starting sync for {steamId}...[/]";
 
         var playerSummary = await _steamApi.GetPlayerSummaryAsync(steamId); 
         await _repository.SaveUserAsync(steamId, playerSummary.Nickname);
@@ -25,7 +28,7 @@ public class SteamSyncService
             .Where(g => g.PlaytimeForeverMinutes > 0) 
             .ToList();
 
-        Console.WriteLine($"Encontrados {playedGames.Count} jogos jogados. Buscando detalhes...");
+        _appState.StatusMessage = $"[cyan]Found {playedGames.Count} games. Fetching details...[/]";
 
         var gamesToSave = new List<GameImportDto>();
         int count = 0;
@@ -33,7 +36,7 @@ public class SteamSyncService
         foreach (var game in playedGames)
         {
             count++;
-            Console.Write($"\rProcessando {count}/{playedGames.Count}: {game.Name}...");
+            _appState.StatusMessage = $"[cyan]Processing {count}/{playedGames.Count}: {game.Name}...[/]";
 
             try
             {
@@ -54,7 +57,7 @@ public class SteamSyncService
             catch (Exception)
             {
                 // Jogos sem achievements dão erro ou retornam vazio.
-                Console.WriteLine($"\n[Aviso] Sem stats para {game.Name}. Salvando básico.");
+                _appState.StatusMessage = $"[yellow]Warning: No stats for {game.Name}. Saving basic info.[/]";
                 
                 gamesToSave.Add(new GameImportDto(
                     game.AppId, 
@@ -69,9 +72,9 @@ public class SteamSyncService
             await Task.Delay(100); 
         }
 
-        Console.WriteLine("\nSalvando no banco de dados...");
+        _appState.StatusMessage = "[cyan]Saving to database...[/]";
         await _repository.SaveGamesAsync(steamId, gamesToSave);
         
-        Console.WriteLine("Sincronização concluída!");
+        _appState.StatusMessage = "[green]Sync completed![/]";
     }
 }

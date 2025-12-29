@@ -11,20 +11,19 @@ public class UserCommandHandler : ICommandHandler
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
     }
 
-    public string Description => "Muda o usuário (uso: user <username|steamid>)";
+    public string Description => "Change user/profile (usage: user <username|steamid>)";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {
         if (args.Length == 0)
         {
-            state.StatusMessage = "[yellow]Use: user <username> ou user <steamid>[/]";
+            state.StatusMessage = "[yellow]Usage: user <username> or user <steamid>[/]";
             return false;
         }
 
         var userInput = string.Join(" ", args).Trim();
         UserInfo? userInfo = null;
 
-        // Tentar resolver como SteamID
         if (ulong.TryParse(userInput, out _) && userInput.Length >= 17)
         {
             try
@@ -33,13 +32,13 @@ public class UserCommandHandler : ICommandHandler
                 
                 if (userInfo == null)
                 {
-                    state.StatusMessage = $"[red]SteamID '{userInput}' não encontrado na Steam API.[/]";
+                    state.StatusMessage = $"[red]SteamID '{userInput}' not found in Steam API.[/]";
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                state.StatusMessage = $"[red]Erro: {ex.Message}[/]";
+                state.StatusMessage = $"[red]Error: {ex.Message}[/]";
                 return false;
             }
         }

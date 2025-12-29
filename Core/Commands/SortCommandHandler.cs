@@ -2,13 +2,13 @@ namespace SteamPlaytimeViewer.Core.Commands;
 
 public class SortCommandHandler : ICommandHandler
 {
-    public string Description => "Ordena os jogos por coluna (uso: sort <coluna> [asc|desc])";
+    public string Description => "Sort games by column (usage: sort <column> [asc|desc])";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {
         if (args.Length == 0)
         {
-            state.StatusMessage = "[yellow]Use: sort [title|playtime|achievements|percentage|firstsession|lastsession] [asc|desc][/]";
+            state.StatusMessage = "[yellow]Usage: sort <column> [asc|desc]\n[grey]Columns: title, playtime, achievements, percentage, firstsession, lastsession[/]";
             return false;
         }
 
@@ -18,7 +18,7 @@ public class SortCommandHandler : ICommandHandler
         var validColumns = new[] { "title", "playtime", "achievements", "percentage", "firstsession", "lastsession" };
         if (!validColumns.Contains(column.ToLower()))
         {
-            state.StatusMessage = $"[red]Coluna '{column}' inválida![/]";
+            state.StatusMessage = $"[red]Invalid column '{column}'![/]";
             return false;
         }
 
@@ -26,7 +26,7 @@ public class SortCommandHandler : ICommandHandler
         state.SortAscending = !direction.Equals("desc", StringComparison.OrdinalIgnoreCase);
         state.ShouldUpdateList = true;
 
-        state.StatusMessage = $"[green]Ordenado por {column} ({(state.SortAscending ? "ascendente" : "descendente")})![/]";
+        state.StatusMessage = $"[green]Sorted by {column} ({(state.SortAscending ? "ascending" : "descending")})![/]";
         return true;
     }
 }
