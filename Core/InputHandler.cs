@@ -51,6 +51,12 @@ public class InputHandler
         // Execução de comando ao pressionar Enter
         if (key.Key == ConsoleKey.Enter)
         {
+            if (state.IsProcessingCommand)
+            {
+                state.StatusMessage = "[yellow]A command is already running. Please wait...[/]";
+                return false;
+            }
+            
             var command = state.InputBuffer.ToString().Trim();
             if (!string.IsNullOrWhiteSpace(command))
             {

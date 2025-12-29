@@ -10,7 +10,7 @@ public class SteamApiConnection
     private readonly string _apiKey;
 
     // Intervalo de segurança para evitar HTTP 429 (Too Many Requests)
-    private const int RequestDelayMs = 800;
+    private const int RequestDelayMs = 500;
 
     public SteamApiConnection(HttpClient httpClient, string apiKey)
     {

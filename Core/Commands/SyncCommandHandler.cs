@@ -52,23 +52,31 @@ public class SyncCommandHandler : ICommandHandler
             return false;
         }
 
-        try
+        // Inicia o sync em background
+        _ = Task.Run(async () =>
         {
-            state.StatusMessage = "[cyan]Syncing account data from Steam API...[/]";
-            state.MarkDirty();
+            state.IsProcessingCommand = true;
+            
+            try
+            {
+                state.StatusMessage = "[cyan]Syncing account data from Steam API...[/]";
 
-            await _steamSyncService.SyncUserDataAsync(steamId);
+                await _steamSyncService.SyncUserDataAsync(steamId);
 
-            state.StatusMessage = $"[green]Sincronização da conta concluída![/]";
-            state.ShouldUpdateList = true;
+                state.StatusMessage = "[green]Sincronização da conta concluída![/]";
+                state.ShouldUpdateList = true;
+            }
+            catch (Exception ex)
+            {
+                state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
+            }
+            finally
+            {
+                state.IsProcessingCommand = false;
+            }
+        });
 
-            return true;
-        }
-        catch (Exception ex)
-        {
-            state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
-            return false;
-        }
+        return true;
     }
 
     private async Task<bool> SyncLocalAsync(AppState state)
@@ -87,25 +95,35 @@ public class SyncCommandHandler : ICommandHandler
             return false;
         }
 
-        try
+        // Inicia o sync em background
+        _ = Task.Run(async () =>
         {
-            state.StatusMessage = "[cyan]Syncing local VDF data...[/]";
-            state.MarkDirty();
-
-            if (!await _localVdfService.SyncLocalLibraryAsync(state.CurrentUser, state.SteamFolder))
+            state.IsProcessingCommand = true;
+            
+            try
             {
-                return false;
+                state.StatusMessage = "[cyan]Syncing local VDF data...[/]";
+
+                if (!await _localVdfService.SyncLocalLibraryAsync(state.CurrentUser, state.SteamFolder))
+                {
+                    state.StatusMessage = "[red]Local sync failed. Check logs for details.[/]";
+                }
+                else
+                {
+                    state.StatusMessage = "[green]Local sync completed successfully![/]";
+                    state.ShouldUpdateList = true;
+                }
             }
+            catch (Exception ex)
+            {
+                state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
+            }
+            finally
+            {
+                state.IsProcessingCommand = false;
+            }
+        });
 
-            state.StatusMessage = "[green]Local sync completed successfully![/]";
-            state.ShouldUpdateList = true;
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            state.StatusMessage = $"[red]Sync error: {ex.Message}[/]";
-            return false;
-        }
+        return true; // Retorna imediatamente, não espera o sync
     }
 }

@@ -67,7 +67,6 @@ public class UserCommandHandler : ICommandHandler
         state.ShouldUpdateList = true;
 
         state.StatusMessage = $"[green]Usuário alterado para {userInfo.Username}![/]";
-        state.MarkDirty();
 
         return true;
     }

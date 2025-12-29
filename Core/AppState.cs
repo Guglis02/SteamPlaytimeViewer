@@ -9,8 +9,6 @@ public class AppState
     public UserInfo CurrentUser { get; set; } 
     public List<GameView> AllGames { get; set; } = new();
     public string SteamFolder { get; internal set; } = String.Empty;
-    public bool ShouldSyncAccount { get; set;}
-    public bool ShouldSyncLocal { get; set;}
 
     public bool ShouldUpdateList { get; set; }
 
@@ -19,7 +17,16 @@ public class AppState
         
     // IO
     public StringBuilder InputBuffer { get; set; } = new();
-    public string StatusMessage { get; set; } = String.Empty;
+    private string _statusMessage = String.Empty;
+    public string StatusMessage 
+    { 
+        get => _statusMessage;
+        set 
+        {
+            _statusMessage = value;
+            MarkDirty();
+        }
+    }
 
     // Terminal Window
     public readonly int TerminalMinSize = 17;
@@ -28,6 +35,7 @@ public class AppState
 
     // Dirty State
     public bool IsDirty { get; set; } = true;    
+    public bool IsProcessingCommand { get; set; } = false;
     
     // Appearance
     public string MainColor = Color.Teal.ToString();
