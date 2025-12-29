@@ -9,9 +9,6 @@ public class LocalVdfService
 {
     private readonly IGameRepository _repository;
     private readonly SteamApiConnection _steamApi;
-    
-    // Por enquanto fica esse placeholder
-    private readonly string steamPath = @"C:\Program Files (x86)\Steam"; 
 
     public LocalVdfService(SteamApiConnection steamApi, IGameRepository repository)
     {
@@ -19,10 +16,15 @@ public class LocalVdfService
         _repository = repository;
     }
 
-    public async Task SyncLocalLibraryAsync(string steamId)
-    {
+    public async Task SyncLocalLibraryAsync(string steamId, string steamPath)
+    {                
+        if (steamPath == null)
+        {
+            Console.WriteLine($"Pasta '{steamPath}' não encontrada!");
+            return;
+        }
+     
         Console.WriteLine("Lendo arquivo VDF local...");
-        
         List<GameImportDto> localGamesCandidates = GetLocalLibraryCandidates(steamId, steamPath);
         
         Console.WriteLine($"Encontrados {localGamesCandidates.Count} jogos no VDF local.");
@@ -108,8 +110,8 @@ public class LocalVdfService
             foreach (var app in apps)
             {
                 string appIdStr = app.Key;
-                string playtimeStr = app.Value.Playtime?.ToString();
-                string lastPlayedStr = app.Value.LastPlayed?.ToString();
+                string? playtimeStr = app.Value.Playtime?.ToString();
+                string? lastPlayedStr = app.Value.LastPlayed?.ToString();
 
                 if (int.TryParse(appIdStr, out int appId) && 
                     int.TryParse(playtimeStr, out int minutes) && 

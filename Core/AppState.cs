@@ -28,4 +28,6 @@ public class AppState
     
     public void MarkDirty() => IsDirty = true;
     public void ClearDirty() => IsDirty = false;
+    public bool ShouldExit { get; set; } = false;
+    public string SteamFolder { get; internal set; }
 }

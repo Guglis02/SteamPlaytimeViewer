@@ -31,12 +31,12 @@ public static class UserInterface
             .BorderColor(Color.Teal)
             .Expand();
         
-        table.AddColumn("Title");
-        table.AddColumn("Playtime");
-        table.AddColumn("Achievements");
-        table.AddColumn("%");
-        table.AddColumn("First_Session");
-        table.AddColumn("Last_Session");
+        table.AddColumn("Title", col => col.NoWrap().Alignment(Justify.Left));
+        table.AddColumn("Playtime", col => col.NoWrap().Alignment(Justify.Right));
+        table.AddColumn("Achievements", col => col.NoWrap().Alignment(Justify.Right));
+        table.AddColumn("%", col => col.NoWrap().Alignment(Justify.Right));
+        table.AddColumn("First_Session", col => col.NoWrap().Alignment(Justify.Right));
+        table.AddColumn("Last_Session", col => col.NoWrap().Alignment(Justify.Right));
 
         if (visibleGames.Any())
         {

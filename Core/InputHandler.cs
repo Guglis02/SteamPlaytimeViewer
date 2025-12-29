@@ -1,46 +1,67 @@
-using SteamPlaytimeViewer.Services;
+using SteamPlaytimeViewer.Core.Commands;
 
 namespace SteamPlaytimeViewer.Core;
 
+/// <summary>
+/// Processa entrada do teclado do usuário.
+/// </summary>
 public class InputHandler
 {
-    private readonly DataService _dataService;
-    private readonly string _helpMessage;
+    private readonly CommandRegistry _commandRegistry;
 
-    public InputHandler(DataService dataService, string helpMessage)
+    public InputHandler(CommandRegistry commandRegistry)
     {
-        _dataService = dataService;
-        _helpMessage = helpMessage;
+        _commandRegistry = commandRegistry ?? throw new ArgumentNullException(nameof(commandRegistry));
     }
 
+    /// <summary>
+    /// Processa uma tecla pressionada pelo usuário.
+    /// </summary>
+    /// <param name="key">Informação da tecla pressionada</param>
+    /// <param name="state">Estado atual da aplicação</param>
+    /// <returns>True se a entrada foi processada</returns>
     public async Task<bool> ProcessInputAsync(ConsoleKeyInfo key, AppState state)
     {
         state.MarkDirty();
 
+        // Navegação vertical
         if (key.Key == ConsoleKey.UpArrow)
         {
-            if (state.ScrollIndex > 0) state.ScrollIndex--;
+            if (state.ScrollIndex > 0)
+                state.ScrollIndex--;
             return true;
         }
-        else if (key.Key == ConsoleKey.DownArrow)
+
+        if (key.Key == ConsoleKey.DownArrow)
         {
             int maxScroll = Math.Max(0, state.AllGames.Count - state.ItemsPerPage);
-            if (state.ScrollIndex < maxScroll) state.ScrollIndex++;
+            if (state.ScrollIndex < maxScroll)
+                state.ScrollIndex++;
             return true;
         }
-        else if (key.Key == ConsoleKey.Backspace)
+
+        // Apaga ultimo caracter do buffer de entrada
+        if (key.Key == ConsoleKey.Backspace)
         {
             if (state.InputBuffer.Length > 0)
                 state.InputBuffer.Length--;
             return true;
         }
-        else if (key.Key == ConsoleKey.Enter)
+
+        // Execução de comando ao pressionar Enter
+        if (key.Key == ConsoleKey.Enter)
         {
-            await ProcessCommandAsync(state.InputBuffer.ToString().Trim(), state);
+            var command = state.InputBuffer.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(command))
+            {
+                await _commandRegistry.ExecuteAsync(command, state);
+            }
             state.InputBuffer.Clear();
             return true;
         }
-        else if (!char.IsControl(key.KeyChar))
+
+        // Adiciona caracteres normais ao buffer
+        if (!char.IsControl(key.KeyChar))
         {
             state.InputBuffer.Append(key.KeyChar);
             return true;
@@ -48,39 +69,4 @@ public class InputHandler
 
         return false;
     }
-
-    private async Task ProcessCommandAsync(string command, AppState state)
-    {
-        state.MarkDirty();
-        
-        if (command == "exit")
-        {
-            return;
-        }
-        else if (command == "help")
-        {
-            state.StatusMessage = _helpMessage;
-        }
-        else if (command.StartsWith("user "))
-        {
-            var newUser = command.Substring(5).Trim();
-            if (await _dataService.UserExistsAsync(newUser))
-            {
-                state.CurrentUser = newUser;
-                state.ScrollIndex = 0;
-                state.AllGames = await _dataService.GetGamesAsync(newUser);
-                state.StatusMessage = $"[green]User changed to {newUser}![/]";
-            }
-            else
-            {
-                state.StatusMessage = $"[red]User '{newUser}' not found![/]";
-            }
-        }
-        else
-        {
-            state.StatusMessage = $"[yellow]Unknown command '{command}'![/]";
-        }
-    }
-
-    public bool IsExitCommand(string input) => input.Trim() == "exit";
 }

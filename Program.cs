@@ -7,6 +7,7 @@ using SteamPlaytimeViewer.Services;
 using Microsoft.Extensions.Configuration;
 using SteamPlaytimeViewer.External.SteamAPI;
 using SteamPlaytimeViewer.External.SteamApi;
+using SteamPlaytimeViewer.Core.Commands;
 
 public class Program
 {
@@ -49,17 +50,26 @@ public class Program
         LocalVdfService localVdfService = new LocalVdfService(steamApiConnection, repository);
         // ------
 
-        Console.OutputEncoding = Encoding.UTF8;
-        
-        string helpMessage = "Type 'user <name>' to change profile or 'exit'.";
+        // Command Setup
+        var commandRegistry = new CommandRegistry();
+        commandRegistry.Register("exit", new ExitCommandHandler());
+        commandRegistry.Register("help", new HelpCommandHandler(commandRegistry));
+        commandRegistry.Register("user", new UserCommandHandler(dataService));
 
+        var inputHandler = new InputHandler(commandRegistry);
+        // ------
+
+        // AppState Setup
+        string helpMessage = "Type 'help' for a list of commands and 'help <command>' for details.";
         var state = new AppState(helpMessage);
-        state.TerminalHeight = Console.WindowHeight;
-        
-        state.AllGames = await dataService.GetGamesAsync(state.CurrentUser);
 
-        var inputHandler = new InputHandler(dataService, helpMessage);
-        
+        state.TerminalHeight = Console.WindowHeight;
+        state.AllGames = await dataService.GetGamesAsync(state.CurrentUser);
+        state.SteamFolder = SteamPathFinder.TryAutoDetectSteamPath() ?? "";
+        // ------
+
+        Console.OutputEncoding = Encoding.UTF8;
+
         while (true)
         {
             // Handle terminal resize
@@ -92,11 +102,11 @@ public class Program
             {
                 var key = Console.ReadKey(intercept: true);
                 await inputHandler.ProcessInputAsync(key, state);
+            }
 
-                if (inputHandler.IsExitCommand(state.InputBuffer.ToString()))
-                {
-                    break;
-                }
+            if (state.ShouldExit)
+            {
+                break;
             }
 
             await Task.Delay(50);
