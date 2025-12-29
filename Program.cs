@@ -60,6 +60,7 @@ public class Program
         commandRegistry.Register("sort", new SortCommandHandler());
         commandRegistry.Register("search", new SearchCommandHandler());
         commandRegistry.Register("sync", new SyncCommandHandler(steamSyncService, localVdfService));
+        commandRegistry.Register("folder", new FolderCommandHandler());
 
         var inputHandler = new InputHandler(commandRegistry);
         // ------

@@ -14,11 +14,16 @@ public class DataService
         _steamApiConnection = steamApiConnection;
     }
 
-    public async Task<List<GameView>> GetGamesAsync(string username, 
+    public async Task<List<GameView>> GetGamesAsync(string? username, 
                                              string? searchFilter = null,
                                              string sortColumn = nameof(GameView.Title),
                                              bool sortAscending = true)
     {
+        if (username == null)
+        {
+            return new List<GameView>();
+        }
+
         return await _repository.GetGamesByUserAsync(username, searchFilter, sortColumn, sortAscending);
     }
 
