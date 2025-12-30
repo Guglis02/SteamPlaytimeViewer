@@ -57,7 +57,7 @@ public class UserCommandHandler : ICommandHandler
         state.SortAscending = true;
         state.ShouldUpdateList = true;
 
-        state.StatusMessage = $"[green]Usuário alterado para {userInfo.Username}![/]";
+        state.StatusMessage = $"[green]User changed to {userInfo.Username}![/]";
         return true;
     }
 

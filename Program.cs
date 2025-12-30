@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using SteamPlaytimeViewer.External.SteamAPI;
 using SteamPlaytimeViewer.External.SteamApi;
 using SteamPlaytimeViewer.Core.Commands;
+using Microsoft.EntityFrameworkCore;
 
 public class Program
 {
@@ -17,10 +18,11 @@ public class Program
     {
         // Database setup
         SteamDbContext dbContext = new SteamDbContext();
+        dbContext.Database.Migrate();
 
         IGameRepository repository = useRealDb
             ? new SqliteGameRepository(dbContext)
-            : new MockGameRepository();
+            : new MockGameRepository();            
         // ------
 
         // API Setup
