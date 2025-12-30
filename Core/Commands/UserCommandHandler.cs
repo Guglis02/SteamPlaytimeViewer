@@ -22,7 +22,7 @@ public class UserCommandHandler : ICommandHandler
         }
 
         var userInput = string.Join(" ", args).Trim();
-        
+
         // Detectar tipo de input
         var inputType = DetectInputType(userInput, out var extractedValue);
         UserInfo? userInfo = null;
@@ -61,6 +61,13 @@ public class UserCommandHandler : ICommandHandler
         return true;
     }
 
+    /// <summary>
+    /// Detecta o tipo de entrada fornecida pelo usuário e extrai o valor relevante.
+    /// Identifica se é um SteamID direto, URL com /profiles/, URL customizada com /id/, ou um nickname registrado.
+    /// </summary>
+    /// <param name="input">A entrada do usuário (SteamID, URL ou nickname)</param>
+    /// <param name="extractedValue">Saída com o valor extraído (SteamID ou nome de usuário)</param>
+    /// <returns>O tipo de entrada detectado</returns>
     private InputType DetectInputType(string input, out string extractedValue)
     {
         input = input.Trim();
@@ -123,7 +130,7 @@ public class UserCommandHandler : ICommandHandler
         try
         {
             var userInfo = await _dataService.ResolveBySteamIdAsync(steamId);
-            
+
             if (userInfo == null)
             {
                 state.StatusMessage = $"[red]SteamID '{steamId}' not found in Steam API.[/]";
@@ -144,7 +151,7 @@ public class UserCommandHandler : ICommandHandler
         try
         {
             var steamId = await _dataService.ResolveVanityUrlAsync(vanityName);
-            
+
             if (string.IsNullOrEmpty(steamId))
             {
                 state.StatusMessage = $"[yellow]Perfil '{vanityName}' não encontrado na Steam.[/]";
@@ -152,7 +159,7 @@ public class UserCommandHandler : ICommandHandler
             }
 
             var userInfo = await _dataService.ResolveBySteamIdAsync(steamId);
-            
+
             if (userInfo == null)
             {
                 state.StatusMessage = $"[red]SteamID '{steamId}' not found in Steam API.[/]";
@@ -174,7 +181,7 @@ public class UserCommandHandler : ICommandHandler
 
         if (userInfo == null)
         {
-            state.StatusMessage = 
+            state.StatusMessage =
                 $"[yellow]Usuário '{username}' não encontrado no banco. Use o SteamID para registrar um novo usuário.[/]";
             return null;
         }

@@ -19,13 +19,13 @@ public class SteamSyncService
     {
         _appState.StatusMessage = $"[cyan]Starting sync for {steamId}...[/]";
 
-        var playerSummary = await _steamApi.GetPlayerSummaryAsync(steamId); 
+        var playerSummary = await _steamApi.GetPlayerSummaryAsync(steamId);
         await _repository.SaveUserAsync(steamId, playerSummary.Nickname);
 
         var ownedGames = await _steamApi.GetOwnedGamesAsync(steamId);
 
         var playedGames = ownedGames
-            .Where(g => g.PlaytimeForeverMinutes > 0) 
+            .Where(g => g.PlaytimeForeverMinutes > 0)
             .ToList();
 
         _appState.StatusMessage = $"[cyan]Found {playedGames.Count} games. Fetching details...[/]";
@@ -58,23 +58,23 @@ public class SteamSyncService
             {
                 // Jogos sem achievements dão erro ou retornam vazio.
                 _appState.StatusMessage = $"[yellow]Warning: No stats for {game.Name}. Saving basic info.[/]";
-                
+
                 gamesToSave.Add(new GameImportDto(
-                    game.AppId, 
-                    game.Name, 
-                    0, 0, 
-                    game.PlaytimeForeverMinutes / 60.0, 
-                    null, 
+                    game.AppId,
+                    game.Name,
+                    0, 0,
+                    game.PlaytimeForeverMinutes / 60.0,
+                    null,
                     DateTimeOffset.FromUnixTimeSeconds(game.LastPlayedUnix).DateTime
                 ));
             }
 
-            await Task.Delay(100); 
+            await Task.Delay(100);
         }
 
         _appState.StatusMessage = "[cyan]Saving to database...[/]";
         await _repository.SaveGamesAsync(steamId, gamesToSave);
-        
+
         _appState.StatusMessage = "[green]Sync completed![/]";
     }
 }

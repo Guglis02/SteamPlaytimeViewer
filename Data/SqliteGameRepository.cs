@@ -18,7 +18,7 @@ public class SqliteGameRepository : IGameRepository
                                                 string? searchFilter = null,
                                                 string sortColumn = nameof(GameView.Title),
                                                 bool sortAscending = true)
-    {        
+    {
         var user = await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Nickname == username);
 
@@ -37,7 +37,7 @@ public class SqliteGameRepository : IGameRepository
                 .Where(ugs => ugs.Game.Title.ToLower().Contains(query))
                 .ToList();
         }
-            
+
         rawGames = ApplySorting(rawGames, sortColumn, sortAscending);
 
         var games = rawGames.Select(ugs => new GameView(
@@ -76,10 +76,10 @@ public class SqliteGameRepository : IGameRepository
 
         if (user == null)
         {
-            user = new User 
-            { 
-                SteamId = steamId, 
-                Nickname = nickname 
+            user = new User
+            {
+                SteamId = steamId,
+                Nickname = nickname
             };
             _dbContext.Users.Add(user);
         }
@@ -100,13 +100,13 @@ public class SqliteGameRepository : IGameRepository
 
         if (user == null)
         {
-            return; 
+            return;
         }
 
         foreach (var importData in gamesRawData)
         {
             var dbGame = await _dbContext.Games.FindAsync(importData.AppId);
-            
+
             if (dbGame == null)
             {
                 dbGame = new SteamPlaytimeViewer.Models.Game
@@ -143,7 +143,7 @@ public class SqliteGameRepository : IGameRepository
                 userStats.PlaytimeHours = importData.PlaytimeHours;
                 userStats.UnlockedAchievements = importData.UnlockedAchievements;
                 userStats.LastPlayed = importData.LastPlayed;
-                
+
                 if (userStats.FirstPlayed == null && importData.FirstPlayed != null)
                 {
                     userStats.FirstPlayed = importData.FirstPlayed;
@@ -159,7 +159,7 @@ public class SqliteGameRepository : IGameRepository
         return await _dbContext.Users
             .AnyAsync(u => u.Nickname == username);
     }
-    
+
     private static double CalculatePercentage(int unlocked, int total)
     {
         if (total == 0) return 0.0;

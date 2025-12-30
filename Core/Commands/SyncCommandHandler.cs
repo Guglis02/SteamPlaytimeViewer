@@ -42,6 +42,11 @@ public class SyncCommandHandler : ICommandHandler
         }
     }
 
+    /// <summary>
+    /// Inicia a sincronização de dados da conta Steam via API oficial de forma assíncrona no background.
+    /// Busca todos os jogos e suas estatísticas (tempo de jogo, conquistas) e salva no banco de dados.
+    /// Retorna imediatamente sem esperar a sincronização completar.
+    /// </summary>
     private async Task<bool> SyncAccountAsync(AppState state)
     {
         var steamId = state.CurrentUser.SteamId;
@@ -56,7 +61,7 @@ public class SyncCommandHandler : ICommandHandler
         _ = Task.Run(async () =>
         {
             state.IsProcessingCommand = true;
-            
+
             try
             {
                 state.StatusMessage = "[cyan]Syncing account data from Steam API...[/]";
@@ -79,6 +84,11 @@ public class SyncCommandHandler : ICommandHandler
         return true;
     }
 
+    /// <summary>
+    /// Inicia a sincronização de dados da biblioteca local via arquivo VDF em background.
+    /// Lê os jogos instalados localmente e enriquece com dados da API Steam.
+    /// Retorna imediatamente sem esperar a sincronização completar.
+    /// </summary>
     private async Task<bool> SyncLocalAsync(AppState state)
     {
         if (string.IsNullOrWhiteSpace(state.SteamFolder))
@@ -99,7 +109,7 @@ public class SyncCommandHandler : ICommandHandler
         _ = Task.Run(async () =>
         {
             state.IsProcessingCommand = true;
-            
+
             try
             {
                 state.StatusMessage = "[cyan]Syncing local VDF data...[/]";

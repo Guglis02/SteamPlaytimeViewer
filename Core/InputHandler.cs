@@ -56,7 +56,7 @@ public class InputHandler
                 state.StatusMessage = "[yellow]A command is already running. Please wait...[/]";
                 return false;
             }
-            
+
             var command = state.InputBuffer.ToString().Trim();
             if (!string.IsNullOrWhiteSpace(command))
             {

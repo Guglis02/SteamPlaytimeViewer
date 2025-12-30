@@ -9,7 +9,7 @@ public interface IGameRepository
                                              bool sortAscending);
     Task<bool> UserExistsAsync(string username);
     Task<bool> UserExistsBySteamIdAsync(string steamId);
-    
+
     Task<string?> GetUserNicknameBySteamIdAsync(string steamId);
     Task<string?> GetSteamIdByUsernameAsync(string username);
 

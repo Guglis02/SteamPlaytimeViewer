@@ -6,6 +6,11 @@ using SteamPlaytimeViewer.Models;
 
 namespace SteamPlaytimeViewer.Services;
 
+/// <summary>
+/// Serviço para sincronizar a biblioteca de jogos local do Steam através de arquivos VDF.
+/// Lê o arquivo localconfig.vdf para obter informações de jogos instalados e enriquece os dados
+/// com informações da API do Steam (estatísticas de conquistas, nomes oficiais, etc).
+/// </summary>
 public class LocalVdfService
 {
     private readonly IGameRepository _repository;
@@ -39,7 +44,14 @@ public class LocalVdfService
         return true;
     }
 
-
+    /// <summary>
+    /// Sincroniza a biblioteca de jogos local do usuário usando arquivo VDF.
+    /// Percorre todos os jogos encontrados no arquivo localconfig.vdf, busca detalhes na API Steam
+    /// (conquistas e nome oficial) e salva as informações no banco de dados.
+    /// </summary>
+    /// <param name="userInfo">Informações do usuário (SteamID e nickname)</param>
+    /// <param name="steamPath">Caminho raiz da pasta de instalação do Steam</param>
+    /// <returns>true se sincronização completou com sucesso, false caso contrário</returns>
     public async Task<bool> SyncLocalLibraryAsync(UserInfo userInfo, string steamPath)
     {                
         if (!UserFolderExists(userInfo, steamPath))

@@ -100,18 +100,18 @@ public class SteamApiConnection
 
     public async Task<string> GetGameNameAsync(int appId)
     {
-        await Task.Delay(RequestDelayMs); 
+        await Task.Delay(RequestDelayMs);
 
         var url = $"http://store.steampowered.com/api/appdetails?appids={appId}&filters=basic";
 
         try
         {
             var response = await _httpClient.GetStringAsync(url);
-            
+
             var node = JsonNode.Parse(response);
-            
+
             var appNode = node?[appId.ToString()];
-            
+
             if (appNode?["success"]?.GetValue<bool>() == true)
             {
                 return appNode?["data"]?["name"]?.GetValue<string>() ?? "Unknown";
@@ -131,7 +131,7 @@ public class SteamApiConnection
         await Task.Delay(RequestDelayMs);
         var url = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={_apiKey}&vanityurl={vanityName}";
 
-        try 
+        try
         {
             var response = await _httpClient.GetStringAsync(url);
             var data = JsonSerializer.Deserialize<SteamResponse<ResolveVanityResponse>>(response);
@@ -141,7 +141,7 @@ public class SteamApiConnection
                 return data.Data.SteamId;
             }
         }
-        catch 
+        catch
         {
         }
 

@@ -16,12 +16,12 @@ public class HelpCommandHandler : ICommandHandler
     public Task<bool> HandleAsync(string[] args, AppState state)
     {
         var commands = _registry.GetAllCommands();
-        
+
         if (args.Length == 0)
         {
             var sb = new StringBuilder();
             sb.Append("[bold cyan]Available Commands:[/]");
-            
+
             foreach (var cmd in commands.OrderBy(x => x.Key))
             {
                 sb.Append($" {cmd.Key};");

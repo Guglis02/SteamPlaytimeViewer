@@ -13,10 +13,10 @@ public class MockGameRepository : IGameRepository
         for (int i = 0; i < 50; i += 2)
         {
             guglis.Add(new GameView(
-                $"Elden Ring {i}", $"{120+i}h", "42/42", "100%", "2022-02-25", "2024-01-01"
+                $"Elden Ring {i}", $"{120 + i}h", "42/42", "100%", "2022-02-25", "2024-01-01"
                 ));
             guglis.Add(new GameView(
-                "Hollow Knight", "50h", "63/63", "100%", "2021-05-10", "2023-11-15" 
+                "Hollow Knight", "50h", "63/63", "100%", "2021-05-10", "2023-11-15"
                 ));
         }
 
@@ -27,12 +27,12 @@ public class MockGameRepository : IGameRepository
         };
 
         var teste = new List<GameView> { };
-        
+
         _userGames.Add("Guglis", guglis);
         _userGames.Add("Fulano", fulano);
         _userGames.Add("Teste", teste);
-    }    
-    
+    }
+
     public Task<List<GameView>> GetGamesByUserAsync(string username,
                                                     string? searchFilter = null,
                                                     string sortColumn = "Title",

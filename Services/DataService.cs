@@ -3,6 +3,10 @@ using SteamPlaytimeViewer.External.SteamApi;
 
 namespace SteamPlaytimeViewer.Services;
 
+/// <summary>
+/// Serviço para resolução e gerenciamento de dados de usuários.
+/// Responsável por buscar informações de usuários.
+/// </summary>
 public class DataService
 {
     private readonly IGameRepository _repository;
@@ -14,7 +18,7 @@ public class DataService
         _steamApiConnection = steamApiConnection;
     }
 
-    public async Task<List<GameView>> GetGamesAsync(string username, 
+    public async Task<List<GameView>> GetGamesAsync(string username,
                                              string? searchFilter = null,
                                              string sortColumn = nameof(GameView.Title),
                                              bool sortAscending = true)
@@ -66,7 +70,7 @@ public class DataService
         try
         {
             var playerSummary = await _steamApiConnection.GetPlayerSummaryAsync(steamId);
-            
+
             if (playerSummary == null || string.IsNullOrWhiteSpace(playerSummary.Nickname))
                 return null;
 
@@ -82,12 +86,12 @@ public class DataService
     public async Task<UserInfo?> ResolveByUsernameAsync(string username)
     {
         string? steamId = await _repository.GetSteamIdByUsernameAsync(username);
-        
+
         if (steamId == null)
             return null;
-        
+
         string? nickname = await _repository.GetUserNicknameBySteamIdAsync(steamId);
-        
+
         return new UserInfo(steamId, nickname ?? username);
     }
 }

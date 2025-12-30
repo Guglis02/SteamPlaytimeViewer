@@ -12,13 +12,13 @@ using SteamPlaytimeViewer.Core.Commands;
 public class Program
 {
     static readonly bool useRealDb = true;
-    
+
     public static async Task Main(string[] args)
     {
         // Database setup
         SteamDbContext dbContext = new SteamDbContext();
 
-        IGameRepository repository = useRealDb 
+        IGameRepository repository = useRealDb
             ? new SqliteGameRepository(dbContext)
             : new MockGameRepository();
         // ------
@@ -28,8 +28,8 @@ public class Program
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile("appsettings.Secret.json", optional: true, reloadOnChange: true);
-            
-            IConfiguration config = builder.Build();
+
+        IConfiguration config = builder.Build();
 
         var steamSettings = config.GetSection("SteamSettings").Get<SteamApiSettings>();
 

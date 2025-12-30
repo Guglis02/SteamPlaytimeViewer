@@ -4,7 +4,7 @@ using System.Text;
 namespace SteamPlaytimeViewer.Core;
 
 public class AppState
-{ 
+{
     // Sync
     public UserInfo CurrentUser { get; set; } = new UserInfo(String.Empty, String.Empty);
     public List<GameView> AllGames { get; set; } = new();
@@ -14,14 +14,14 @@ public class AppState
 
     // Search
     public string? SearchQuery { get; set; }
-        
+
     // IO
     public StringBuilder InputBuffer { get; set; } = new();
     private string _statusMessage = String.Empty;
-    public string StatusMessage 
-    { 
+    public string StatusMessage
+    {
         get => _statusMessage;
-        set 
+        set
         {
             _statusMessage = value;
             MarkDirty();
@@ -34,9 +34,9 @@ public class AppState
     public int TerminalWidth { get; set; }
 
     // Dirty State
-    public bool IsDirty { get; set; } = true;    
+    public bool IsDirty { get; set; } = true;
     public bool IsProcessingCommand { get; set; } = false;
-    
+
     // Appearance
     public string MainColor = Color.Teal.ToString();
 
@@ -47,7 +47,7 @@ public class AppState
         .Skip(ScrollIndex)
         .Take(ItemsPerPage)
         .ToList();
-    
+
     // Exit
     public bool ShouldExit { get; set; } = false;
 
@@ -57,7 +57,7 @@ public class AppState
 
     public void MarkDirty() => IsDirty = true;
     public void ClearDirty() => IsDirty = false;
-    
+
 }
 
 /// <summary>
