@@ -14,12 +14,12 @@ public class DataService
         _steamApiConnection = steamApiConnection;
     }
 
-    public async Task<List<GameView>> GetGamesAsync(string? username, 
+    public async Task<List<GameView>> GetGamesAsync(string username, 
                                              string? searchFilter = null,
                                              string sortColumn = nameof(GameView.Title),
                                              bool sortAscending = true)
     {
-        if (username == null)
+        if (string.IsNullOrWhiteSpace(username))
         {
             return new List<GameView>();
         }
@@ -42,17 +42,14 @@ public class DataService
         return await _repository.GetUserNicknameBySteamIdAsync(steamId);
     }
 
-    /// <summary>
-    /// Pode receber tanto a steamId pura quanto uma URL de um perfil.
-    /// </summary>
-    public async Task<string> ParseSteamIdAsync(string steamId)
+    public async Task<string> ResolveVanityUrlAsync(string vanityName)
     {
         if (_steamApiConnection == null)
         {
-            throw new InvalidOperationException("Steam API não configurada. Não é possível buscar usuário desconhecido.");
+            throw new InvalidOperationException("Steam API não configurada.");
         }
 
-        return await _steamApiConnection.ParseSteamIdAsync(steamId);
+        return await _steamApiConnection.ResolveVanityUrlAsync(vanityName);
     }
 
     public async Task<UserInfo?> ResolveBySteamIdAsync(string steamId)
@@ -60,35 +57,37 @@ public class DataService
         var existingNickname = await GetUserNicknameBySteamIdAsync(steamId);
         if (existingNickname != null)
         {
-            return new UserInfo (steamId: steamId, username: existingNickname);
+            return new UserInfo(steamId, existingNickname);
         }
 
         if (_steamApiConnection == null)
-        {
-            throw new InvalidOperationException("Steam API não configurada. Não é possível buscar usuário desconhecido.");
-        }
+            return null;
 
         try
         {
             var playerSummary = await _steamApiConnection.GetPlayerSummaryAsync(steamId);
             
             if (playerSummary == null || string.IsNullOrWhiteSpace(playerSummary.Nickname))
-            {
                 return null;
-            }
 
-            await _repository.SaveUserAsync(steamId, playerSummary.Nickname);
-
-            return new UserInfo (steamId: steamId, username: playerSummary.Nickname);
+            // NUNCA salva - isso é feito explicitamente em outros comandos
+            return new UserInfo(steamId, playerSummary.Nickname);
         }
-        catch (Exception ex)
+        catch
         {
-            throw new InvalidOperationException($"Erro ao buscar usuário na Steam API: {ex.Message}", ex);
+            return null;
         }
     }
 
-    public async Task<string?> GetSteamIdByUsernameAsync(string username)
+    public async Task<UserInfo?> ResolveByUsernameAsync(string username)
     {
-        return await _repository.GetSteamIdByUsernameAsync(username);
+        string? steamId = await _repository.GetSteamIdByUsernameAsync(username);
+        
+        if (steamId == null)
+            return null;
+        
+        string? nickname = await _repository.GetUserNicknameBySteamIdAsync(steamId);
+        
+        return new UserInfo(steamId, nickname ?? username);
     }
 }

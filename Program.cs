@@ -53,12 +53,10 @@ public class Program
         var state = new AppState()
         {
             StatusMessage = initialMessage,
-            CurrentUser = new UserInfo (username: "hyan", steamId: "76561198062983485"),
             TerminalHeight = Console.WindowHeight,
             TerminalWidth = Console.WindowWidth,
             SteamFolder = SteamPathFinder.TryAutoDetectSteamPath() ?? ""
         };
-        state.AllGames = await dataService.GetGamesAsync(state.CurrentUser.Username);
         // ------
 
         // Steam Sync Setup

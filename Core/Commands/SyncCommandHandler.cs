@@ -106,7 +106,7 @@ public class SyncCommandHandler : ICommandHandler
 
                 if (!await _localVdfService.SyncLocalLibraryAsync(state.CurrentUser, state.SteamFolder))
                 {
-                    state.StatusMessage = "[red]Local sync failed. Check logs for details.[/]";
+                    return;
                 }
                 else
                 {

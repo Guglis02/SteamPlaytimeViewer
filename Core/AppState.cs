@@ -6,7 +6,7 @@ namespace SteamPlaytimeViewer.Core;
 public class AppState
 { 
     // Sync
-    public UserInfo CurrentUser { get; set; } 
+    public UserInfo CurrentUser { get; set; } = new UserInfo(String.Empty, String.Empty);
     public List<GameView> AllGames { get; set; } = new();
     public string SteamFolder { get; internal set; } = String.Empty;
 
@@ -63,14 +63,4 @@ public class AppState
 /// <summary>
 /// Encapsula informações básicas de um usuário.
 /// </summary>
-public class UserInfo
-{
-    public string SteamId { get; set; }
-    public string? Username { get; set; }
-
-    public UserInfo(string steamId, string? username = null)
-    {
-        SteamId = steamId;
-        Username = username;
-    }
-}
+public record UserInfo(string SteamId, string Username);
