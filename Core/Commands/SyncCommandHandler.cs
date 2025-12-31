@@ -15,7 +15,7 @@ public class SyncCommandHandler : ICommandHandler
         _localVdfService = localVdfService ?? throw new ArgumentNullException(nameof(localVdfService));
     }
 
-    public string Description => "Synchronize game data (usage: sync account|local)";
+    public string Description => "Synchronize game data (usage: sync [[account|local]])";
 
     public async Task<bool> HandleAsync(string[] args, AppState state)
     {

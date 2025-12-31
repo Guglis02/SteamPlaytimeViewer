@@ -40,7 +40,7 @@ public class CommandRegistry
 
         if (!_commands.ContainsKey(commandName))
         {
-            state.StatusMessage = $"[yellow]Comando '{commandName}' não reconhecido. Digite 'help' para ver comandos disponíveis.[/]";
+            state.StatusMessage = $"[yellow]Command '{commandName}' not found. Use 'help' to see available commands.[/]";
             return false;
         }
 

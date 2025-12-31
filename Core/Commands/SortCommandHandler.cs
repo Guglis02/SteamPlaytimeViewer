@@ -8,7 +8,7 @@ public class SortCommandHandler : ICommandHandler
     {
         if (args.Length == 0)
         {
-            state.StatusMessage = "[yellow]Usage: sort <column> [asc|desc]\n[grey]Columns: title, playtime, achievements, percentage, firstsession, lastsession[/]";
+            state.StatusMessage = "[yellow]Usage: sort <column> [[asc|desc]]![/] [gray]Columns: title, playtime, achievements, percentage, firstsession, lastsession[/]";
             return false;
         }
 
